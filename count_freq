@@ -1,0 +1,10 @@
+#! /usr/bin/env zsh
+
+# this script takes as input a column and the file it comes from and counts the frequencies of its elements.
+
+# define inputs
+INPUT_COLS=$1
+INPUT_FILE=$2
+
+# function
+xsv select "$INPUT_COLS" $INPUT_FILE | sort | uniq -c | sort -nr | xsv table
