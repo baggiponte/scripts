@@ -1,4 +1,4 @@
-#! /usr/bin/env zsh
+#! /usr/bin/env bash
 
 # this script takes as input a column and the file it comes from and counts the frequencies of its elements.
 

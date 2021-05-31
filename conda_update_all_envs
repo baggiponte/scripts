@@ -5,8 +5,8 @@
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
 source $CONDA_ROOT/etc/profile.d/conda.sh
 
-# source color variables to modify format output of commands such as echo.
-    source "$ZDOTDIR/.zsh-colors"
+# sourcing variables to make formatted output
+source $ZDOTDIR/.zsh-colors
 
 echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
 

@@ -1,7 +1,7 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
-# source color variables to modify format output of commands such as echo.
-source "$ZDOTDIR/.zsh-colors"
+# import variables for making colored output easier
+source $ZDOTDIR/.zsh-colors
 
 #checks if the server is running
 if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
