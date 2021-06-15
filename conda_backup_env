@@ -7,7 +7,7 @@
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
 
 # source colors. this has to be done because subprocesses do not inherit environmental variables
-source "$ZDOTDIR/.zsh-colors"
+source "$ZDOTDIR/colors.zsh"
 
 # define your own backup directory - mine is at ~/.config/conda_envs_backups
 CONDA_ENVS_BACKUP_DIR="${CONFIG}/conda_envs_backups"

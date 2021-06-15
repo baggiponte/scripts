@@ -3,10 +3,10 @@
 
 # this is necessary, otherwise won't find the command. see here:
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
-source $CONDA_ROOT/etc/profile.d/conda.sh
+source "$CONDA_ROOT/etc/profile.d/conda.sh"
 
 # sourcing variables to make formatted output
-source $ZDOTDIR/.zsh-colors
+source "$ZDOTDIR/colors.zsh"
 
 echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
 
