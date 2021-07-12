@@ -11,11 +11,11 @@ echo -e "${BOLD}🍺 Initialising ${BLUE}brew upgrade${RESET}..." \
     && echo -e "${BOLD}Homebrew has been upgraded.${RESET}\n"
 
 echo -e "${BOLD}🍺 Homebrew cleaning up...${RESET} 🧼" \
-    && brew cleanup -s && \
-    echo -e "${BOLD}Homebrew is cleaned up!${RESET} ✨ \n"
+    && brew cleanup -s \
+    && echo -e "${BOLD}Homebrew is cleaned up!${RESET} ✨ \n"
 
-echo -e "${BOLD}🗂 Backing-up Homebrew formulae and casks...${RESET}" \
-    && $MYBINS/brew_export 2>&1 /dev/null \
-    && echo -e "${BOLD}Homebrew is backed up!${RESET} ✅ \n"
+echo -e "${BOLD}🍺 Backing up Formulae and Casks...${RESET} 🗂" \
+    && $MYBINS/brew_export &>/dev/null \
+    && echo -e "${BOLD}Homebrew is backed up!${RESET}\n"
 
 echo -e "${BOLD}🍻 Homebrew is up to date: cheers! ${RESET}🍻 "

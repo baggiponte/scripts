@@ -1,1 +1,0 @@
-/Users/luca/tesi/scripts/csv_into_postgres.sh
