@@ -2,10 +2,11 @@
 
 source "$ZDOTDIR/colors.zsh"
 
-BREW_CACHE="${CONFIG}/brew/"
+BREW_CACHE="${CONFIG}/brew/cache"
 
 if [[ ! -d "$BREW_CACHE" ]]; then
     mkdir -p "$BREW_CACHE"
+fi
 
 echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${BREW_CACHE}${RESET}${BOLD}...${RESET}"
 brew list --formula > ${BREW_CACHE}/brew_formulae.txt
