@@ -10,7 +10,7 @@ source "$CONDA_ROOT/etc/profile.d/conda.sh"
 source "$ZDOTDIR/colors.zsh"
 
 # define your own backup directory - mine is at ~/.config/conda_envs_backups
-CONDA_ENVS_BACKUP_DIR="${CONFIG}/conda_envs_backups"
+CONDA_ENVS_BACKUP_DIR="${CACHE}/conda_envs_backups"
 
 # check if the directory where the package list exists, else make it
 if [[ ! -d "$CONDA_ENVS_BACKUP_DIR" ]]; then
@@ -30,5 +30,5 @@ for ENV in $@; do
     # removes the ENV: DOES NOT ASK FOR CONFIRMATION!
     echo "${BOLD}Deleting environment ${CYAN}${ENV}${RESET}${BOLD}...${RESET}"
     conda env remove --name "${ENV}"
- 
+
 done
