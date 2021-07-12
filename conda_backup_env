@@ -15,7 +15,7 @@ CONDA_ENVS_BACKUP_DIR="${CACHE}/conda_envs_backups"
 # check if the directory where the package list exists, else make it
 if [[ ! -d "$CONDA_ENVS_BACKUP_DIR" ]]; then
     echo -e "\nBackup directory created at "${CONDA_ENVS_BACKUP_DIR}"."
-    mkdir ${CONDA_ENVS_BACKUP_DIR} 
+    mkdir -p ${CONDA_ENVS_BACKUP_DIR} 
 else
     echo -e "\nBackup directory already exists at "${CONDA_ENVS_BACKUP_DIR}"."
 fi

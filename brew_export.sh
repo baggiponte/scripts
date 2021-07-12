@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+source "$ZDOTDIR/colors.zsh"
+
+BREW_CACHE="${CONFIG}/brew/"
+
+if [[ ! -d "$BREW_CACHE" ]]; then
+    mkdir -p "$BREW_CACHE"
+
+echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${BREW_CACHE}${RESET}${BOLD}...${RESET}"
+brew list --formula > ${BREW_CACHE}/brew_formulae.txt
+
+echo -e "\n${BOLD}Exporting Homebrew casks to ${CYAN}${BREW_CACHE}${RESET}${BOLD}...${RESET}"
+brew list --cask > ${BREW_CACHE}/brew_cask.txt
