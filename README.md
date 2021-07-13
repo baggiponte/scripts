@@ -10,3 +10,9 @@ I am starting to write custom `bash` scripts to speed up some operations, and I 
 * **make_journal_entry**. Creates a new entry for a research journal. Useful to improve upon to create parametrised files or templates.
 * **pg_server_status**. Checks if the `PostgreSQL` server is running, else starts it. *Have the $PGDATA/input dir read from input*
 
+## To Do List
+
+* [ ] rewrite scripts using functions
+* `brew_export`:
+    * [ ] make the function generate a `.json` timestamp and schedule a `cron` job or GitHub Workflow?
+    * [ ] make the script check if the packages are the same and then not override it? 
