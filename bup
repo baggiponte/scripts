@@ -14,7 +14,7 @@ echo -e "${BOLD}🍺 Homebrew cleaning up...${RESET} 🧼" \
     && brew cleanup -s \
     && echo -e "${BOLD}Homebrew is cleaned up!${RESET} ✨ \n"
 
-echo -e "${BOLD}🍺 Backing up Formulae and Casks...${RESET} 🗂" \
+echo -e "${BOLD}🗂  Backing up Formulae and Casks...${RESET}" \
     && $MYBINS/brew_export &>/dev/null \
     && echo -e "${BOLD}Homebrew is backed up!${RESET}\n"
 
