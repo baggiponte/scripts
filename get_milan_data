@@ -1,1 +1,36 @@
-get_milan_data
+#! /usr/bin/env bash
+
+TESI_DIR="${1:-$HOME/tesi}"
+
+pushd "$TESI_DIR" || exit 
+
+[ ! -d "./data/milan" ] && mkdir -p ./data/milan
+
+echo "Retrieving Municipi (.geojson)"
+curl "https://dati.comune.milano.it/dataset/36ba21c2-8b48-43ce-bbe1-e236a8a49ff6/resource/99ecd085-0b04-4fb2-a66e-9795694d4fc4/download/ds379_municipi_label.geojson" \
+    -o ./data/milan/milan_municipi.geojson
+
+echo -e "\nRetrieving Municipi (.csv)"
+curl "https://dati.comune.milano.it/dataset/36ba21c2-8b48-43ce-bbe1-e236a8a49ff6/resource/ebb1e5e3-fde1-46dd-8501-fa03ecb5d4bf/download/ds379_municipi_label_4326.csv" \
+    -o ./data/milan/milan_municipi.csv
+
+echo -e "\nRetrieving NILs (.geojson)"
+curl "https://dati.comune.milano.it/dataset/e8e765fc-d882-40b8-95d8-16ff3d39eb7c/resource/9c4e0776-56fc-4f3d-8a90-f4992a3be426/download/ds964_nil_wm.geojson" \
+    -o ./data/milan/milan_nil.geojson
+
+echo -e "\nRetrieving NILs (.csv)"
+curl "https://dati.comune.milano.it/dataset/e8e765fc-d882-40b8-95d8-16ff3d39eb7c/resource/3fce7202-0076-4a7b-ac2c-d2ab9b5dc658/download/ds964_nil_wm_4326.csv" \
+    -o ./data/milan/milan_nil.csv
+
+[ ! -d "./data/bikemi_metadata" ] && mkdir -p ./data/bikemi_metadata
+
+echo -e "\nRetrieving Bikemi stalls locations (.geojson)"
+curl "https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/2d0bafbc-1739-4a14-9e5a-71a648e1fc5b/download/bikemi_stazioni.geojson" \
+    -o ./data/bikemi_metadata/bikemi_stalls.geojson
+
+echo -e "\nRetrieving Bikemi stalls locations (.csv)"
+curl "https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv" \
+    -o ./data/bikemi_metadata/bikemi_stalls.csv
+
+
+popd || exit
