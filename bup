@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source $ZDOTDIR/colors.zsh
+source "$ZDOTDIR/colors.zsh"
 
 echo -e "\n${BOLD}🍺 Initialising ${BLUE}brew update${RESET}..."\
     && brew update \
@@ -15,7 +15,7 @@ echo -e "${BOLD}🍺 Homebrew cleaning up...${RESET} 🧼" \
     && echo -e "${BOLD}Homebrew is cleaned up!${RESET} ✨ \n"
 
 echo -e "${BOLD}🗂  Backing up Formulae and Casks...${RESET}" \
-    && $MYBINS/brew_export &>/dev/null \
+    && "$MYBINS"/brew_export &>/dev/null \
     && echo -e "${BOLD}Homebrew is backed up!${RESET}\n"
 
 echo -e "${BOLD}🍻 Homebrew is up to date: cheers! ${RESET}🍻 "

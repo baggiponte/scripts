@@ -20,12 +20,12 @@ CONDA_ENVS="$(conda env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')"
 for ENV in $CONDA_ENVS; do
     # ${RESET}${BOLD} is meant to produce white highlight (otherwise it is just too dim)
     echo -e "${BOLD}${CYAN}==> ${RESET}${BOLD}Checking for packages to update in ${CYAN}$ENV${RESET}...\n"
-    conda update --all -n "$ENV" -y;
+    mamba update --all -n "$ENV" -y -c conda-forge;
     echo -e "${BOLD}Packages in ${CYAN}$ENV ${RESET}${BOLD}are up to date.${RESET}\n"
 done
 
 echo -e "${BOLD}Environments have been updated. Cleaning the tarballs... ${RESET}\n"
 
-conda clean --all -y
+mamba clean --all -y
 
 echo -e "\n${BOLD}Tarballs removed.${RESET}"
