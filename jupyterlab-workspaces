@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+# this function lists all jupyter workspaces
+
+# takes as stdin all json files in the jupyter config path,
+# under the directories /lab/workspaces, and uses jq to fetch the names
+
+
+# for references for command, see here:
+# https://stackoverflow.com/a/677212/12445701
+
+command -v jq >/dev/null 2>&1 || { echo >&2 "jq is required but it's not installed. Aborting."; exit 1; }
+
+for WORKSPACE in "$JUPYTER_CONFIG_DIR"/lab/workspaces/* ; do 
+    jq -r ".metadata.id" "$WORKSPACE"
+done
