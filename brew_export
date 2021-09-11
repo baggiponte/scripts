@@ -2,7 +2,7 @@
 
 source "$ZDOTDIR/colors.zsh"
 
-BREW_CACHE="${CONFIG}/brew/cache"
+BREW_CACHE="$HOME/.cache/brew/cache"
 
 if [[ ! -d "$BREW_CACHE" ]]; then
     mkdir -p "$BREW_CACHE"
