@@ -28,7 +28,7 @@ pushd "$(dirname "$EXEC_DIR")" 1>/dev/null || exit
 while true ; do
     # prompt user, and read command line argument
     echo ""
-    read -rp "${BOLD}Pair notebooks to Rmd files in ${GREEN}$TARGET_DIR${RESET}${BOLD}? [y/n] ${RESET}" ANSWER
+    read -rp "${BOLD}Pair notebooks to '.Rmd' files in ${GREEN}$TARGET_DIR${RESET}${BOLD} or update them? [y/n] ${RESET}" ANSWER
     echo ""
     # (2) handle the input we were given
     case $ANSWER in

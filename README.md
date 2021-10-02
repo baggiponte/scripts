@@ -18,3 +18,4 @@ I am starting to write custom `bash` scripts to speed up some operations, and I 
 * `brew_export`:
     * [ ] make the function generate a `.json` timestamp and schedule a `cron` job or GitHub Workflow?
     * [ ] make the script check if the packages are the same and then not override it? 
+* [ ] add `read` section to `conda_backup_env` to prevent automatic removal of the env.
