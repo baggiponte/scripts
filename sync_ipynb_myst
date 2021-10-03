@@ -49,7 +49,7 @@ _update_sync () {
     # define destiantion filename by replacing .ipynb with the new extension
     TO_FILE="${FILENAME/.ipynb/."$EXTENSION"}"
 
-    echo -e "${BOLD}${CYAN}==>${RESET}${BOLD}Updating sync between ${CYAN}${FILENAME}${RESET}${BOLD} to ${CYAN}${TO_FILE}${RESET}"
+    echo -e "${BOLD}${CYAN}==>${RESET}${BOLD} Updating sync between ${CYAN}${FILENAME}${RESET}${BOLD} to ${CYAN}${TO_FILE}${RESET}"
     
     # sync notebooks
     jupytext --sync "$INPUT_FILE"
