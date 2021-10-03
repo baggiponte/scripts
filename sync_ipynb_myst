@@ -59,7 +59,7 @@ _update_sync () {
 }
 
 # shellcheck source=formatting_colors
-source "./formatting_colors"
+source "formatting_colors"
 
 # need to rewrite this with getopt (not getopts, so that it accepts flags like --long instead of -l)
 TO_FORMAT=${1:-"md:myst"}
@@ -70,7 +70,11 @@ TARGET_DIR=${4:-"body"}
 pushd "$ROOT_DIR" 1>/dev/null || exit
 
 # if the directory that contains the notebooks does not exist, exit the program
-[[ -d "$NB_DIR" ]] || echo "${BOLD}${RED}${NB_DIR}${RESET}${BOLD} does not exist. Please insert a valid path." && exit
+if [[ ! -d "$NB_DIR" ]] ; then
+    echo "${BOLD}${RED}${NB_DIR}${RESET}${BOLD} does not exist. Please insert a valid path."
+    exit
+fi
+
 
 # if the target directory does not exist, create it
 [[ -d "$TARGET_DIR" ]] || mkdir "${TARGET_DIR}"
@@ -79,7 +83,7 @@ pushd "$ROOT_DIR" 1>/dev/null || exit
 # https://alvinalexander.com/linux-unix/shell-script-how-prompt-read-user-input-bash/
 while true ; do
 
-    echo -e "\n${BOLD}This will affect notebooks in ${BLUE}${NB_DIR}${RESET}${BOLD} and ${YELLOW}${TO_FORMAT}${RESET}${BOLD} files in ${BLUE}${TARGET_DIR}${RESET}"
+    echo -e "\n${BOLD}This will affect notebooks in ${BLUE}${ROOT_DIR}${NB_DIR}${RESET}${BOLD} and ${YELLOW}${TO_FORMAT}${RESET}${BOLD} files in ${BLUE}${ROOT_DIR}${TARGET_DIR}.${RESET}"
     read -rp "${BOLD}Do you want to ${VIOLET}pair [p]${RESET}${BOLD} notebooks or ${VIOLET}sync [s]${RESET}${BOLD} the recent updates? ${VIOLET}[p/s]${RESET} " ANSWER
     echo ""
 
