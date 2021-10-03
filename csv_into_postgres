@@ -43,7 +43,8 @@ for DIR in "$@" ; do
         COLS="$( head -1 "$CSV" )"
         
         echo "${BOLD}${CYAN}==>${WHITE} Copying data from ${CYAN}${CSV} ${WHITE}to table ${BLUE}${TABLE_NAME} ${WHITE}in the PostgreSQL database${RESET}"
-        psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_DIR}(${COLS}) FROM './${CSV}' DELIMITER ',' CSV HEADER;" bikemi
+        psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_DIR}(${COLS}) FROM '$(pwd)/${CSV}' DELIMITER ',' CSV HEADER;" bikemi
+        # `$(pwd)/${CSV}` is used just because I am scared
 
     done
 
