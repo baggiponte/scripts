@@ -15,7 +15,7 @@ echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
     # sed used to:
     # - delete lines starting with #
     # - delete blank lines (^$)
-CONDA_ENVS="$(conda env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')" 
+CONDA_ENVS="$(mamba env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')" 
 
 for ENV in $CONDA_ENVS; do
     # ${RESET}${BOLD} is meant to produce white highlight (otherwise it is just too dim)
