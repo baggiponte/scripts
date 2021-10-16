@@ -1,7 +1,29 @@
 #! /usr/bin/env bash
 
-# shellcheck source=formatting_colors
-source formatting_colors
+_create_table_if_not_exists () {
+
+    # define parameters
+    TABLE_NAME="$1"
+    DB_NAME="$2"
+
+    echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${TABLE_NAME}${WHITE} exists${RESET}"
+    psql -c "SET datestyle TO iso, dmy;
+
+        CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+            bici INT,
+            tipo_bici VARCHAR(20),
+            cliente_anonimizzato INT,
+            data_prelievo TIMESTAMP,
+            numero_stazione_prelievo INT,
+            nome_stazione_prelievo TEXT,
+            data_restituzione TIMESTAMP,
+            numero_stazione_restituzione INT,
+            nome_stazione_restituzione TEXT,
+            distanza_totale REAL
+        );" "$DB_NAME" 
+    echo ""
+
+}
 
 _copy_csv_into_postgres () {
 
@@ -19,12 +41,21 @@ _copy_csv_into_postgres () {
 
 }
 
+# shellcheck source=formatting_colors
+source formatting_colors
+
+TABLE_NAME="bikemi_rentals"
+DB_NAME="bikemi"
+
+_create_table_if_not_exists "$TABLE_NAME" "$DB_NAME"
+
 for DIR in "$@"; do
 
-    pushd "$DIR" 1>/dev/null/ || exit 
+    pushd "$DIR" 1>/dev/null || exit 
 
     for CSV in *.csv ; do
         _copy_csv_into_postgres "$CSV" "$TABLE_NAME" "$DB_NAME"
+        echo ""
     done
 
     popd 1>/dev/null || exit

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+_filter_out_invalid_rows () {
+
+CSV="$1"
+TEMP="${CSV/.csv/_temp.csv}"
+
+xsv search -v -s 1 '^[A-Za-z]' "$CSV" > "$TEMP" && mv "$TEMP" "$CSV"
+
+}
+
+DIR="${1:-"${PWD}"}"
+
+for CSV in "${DIR}"/*.csv ; do
+    echo "filtering rows of ${CSV}"
+    _filter_out_invalid_rows "$CSV"
+    echo ""
+done

@@ -87,7 +87,10 @@ _turn_xlsx_into_csv () {
 
     # redefine input(s)
     XLSX="$1"
+    # the name of the temporary csv
     TEMP_CSV="${XLSX/.xlsx/_temp.csv}"
+    # the name of the output csv
+    CSV="${TEMP_CSV/_temp}"
 
     # 1. convert the .xlsx into a _temp.csv file, then remove the .xlsx file
     echo "${BOLD}${GREEN}==> ${WHITE}Convert ${GREEN}${XLSX} ${WHITE}to ${GREEN}${TEMP_CSV}${RESET}"
@@ -98,8 +101,9 @@ _turn_xlsx_into_csv () {
     _clean_headers "${TEMP_CSV}"
 
     # 3. selects only the columns needed
-    echo "${BOLD}${GREEN}==> ${WHITE}Select the columns we need from ${GREEN}${TEMP_CSV}${RESET}"
-    xsv select "1-3,5-7,10-12,15" "${TEMP_CSV}" > "${TEMP_CSV/_temp}" && rm "${TEMP_CSV}"
+    echo "${BOLD}${GREEN}==> ${WHITE}Select the columns and remove incompatible rows from ${GREEN}${TEMP_CSV}${RESET}"
+    xsv search -v -s 1 '^[a-zA-Z]' "${TEMP_CSV}" | \
+        xsv select "1-3,5-7,10-12,15" "${TEMP_CSV}" > "${CSV}" && rm "${TEMP_CSV}"
 
 } 
 
@@ -125,7 +129,7 @@ _zip_csvs_and_remove_dir () {
 
     # zip recursively all files in the extraction dir
     echo -e "${BOLD}${BLUE}=>${WHITE} Backing up ${BLUE}${EXEC_DIR}${RESET}"
-    zip -r "${EXEC_DIR}_csv.zip" "${EXEC_DIR}" && rm -rf "$EXEC_DIR"
+    zip -9 "${EXEC_DIR}_csv.zip" "${EXEC_DIR}"/*.csv && rm -rf "$EXEC_DIR"
 
 }
 
