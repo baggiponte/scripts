@@ -101,9 +101,9 @@ _turn_xlsx_into_csv () {
     echo "${BOLD}${GREEN}==> ${WHITE}Select the columns we need from ${GREEN}${TEMP_CSV}${RESET}"
     xsv select "1-3,5-7,10-12,15" "${TEMP_CSV}" > "${TEMP_CSV/_temp}" && rm "${TEMP_CSV}"
 
-}
+} 
 
-_copy_csv_into_postgres() {
+_copy_csv_into_postgres () {
 
     # define parameters
     CSV="$1"
@@ -115,11 +115,11 @@ _copy_csv_into_postgres() {
     
     # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
     echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${CSV} ${WHITE}to ${BLUE}${TABLE_NAME} ${WHITE}in ${VIOLET}${DB_NAME}${RESET}"
-    psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_NAME}(${COLS}) FROM '${CSV}' DELIMITER ',' CSV HEADER;" "$DB_NAME"
+    psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_NAME}(${COLS}) FROM '${PWD}/${CSV}' DELIMITER ',' CSV HEADER;" "$DB_NAME"
 
 }
 
-_zip_csvs_and_remove_dir() {
+_zip_csvs_and_remove_dir () {
 
     EXEC_DIR="$1"
 
@@ -155,7 +155,7 @@ for ZIP_PATH in "$@"; do
     _unzip_all "$ZIP_PATH" "$EXTRACTION_DIR"
 
     # II. Temporarily cd into EXTRACTION_DIR
-    pushd "$EXTRACTION_DIR" || exit
+    pushd "$EXTRACTION_DIR" 1>/dev/null || exit
 
     # III. Clean filenames in EXTRACTION_DIR
     for FILE in * ; do
@@ -176,11 +176,11 @@ for ZIP_PATH in "$@"; do
     done
 
     # temporarily move up to zip the csvs and remove the directory
-    pushd .. || exit
+    pushd .. 1>/dev/null || exit
 
     _zip_csvs_and_remove_dir "$EXTRACTION_DIR"
 
     # move back to the original directory
-    pushd +2 || exit
+    pushd +2 1>/dev/null || exit
     
 done

@@ -1,0 +1,32 @@
+#! /usr/bin/env bash
+
+# shellcheck source=formatting_colors
+source formatting_colors
+
+_copy_csv_into_postgres () {
+
+    # define parameters
+    CSV="$1"
+    TABLE_NAME="$2"
+    DB_NAME="$3"
+
+    # store the columns of the csv as an array
+    COLS="$( head -1 "$CSV" )"
+    
+    # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
+    echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${CSV} ${WHITE}to ${BLUE}${TABLE_NAME} ${WHITE}in ${VIOLET}${DB_NAME}${RESET}"
+    psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_NAME}(${COLS}) FROM '${PWD}/${CSV}' DELIMITER ',' CSV HEADER;" "$DB_NAME"
+
+}
+
+for DIR in "$@"; do
+
+    pushd "$DIR" 1>/dev/null/ || exit 
+
+    for CSV in *.csv ; do
+        _copy_csv_into_postgres "$CSV" "$TABLE_NAME" "$DB_NAME"
+    done
+
+    popd 1>/dev/null || exit
+
+done 
