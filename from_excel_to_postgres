@@ -56,7 +56,7 @@ _create_table_if_not_exists () {
 
 _unzip_all () {
 
-    ZIP_PATH="$1"
+    PATH_TO_ZIP="$1"
     EXTRACTION_DIR="$2"
 
     echo "${BOLD}${BLUE}=> ${WHITE}Create the extraction directory ${BLUE}${EXTRACTION_DIR}${RESET}"
@@ -92,7 +92,6 @@ _turn_xlsx_into_csv () {
     # 1. convert the .xlsx into a _temp.csv file, then remove the .xlsx file
     echo "${BOLD}${GREEN}==> ${WHITE}Convert ${GREEN}${XLSX} ${WHITE}to ${GREEN}${TEMP_CSV}${RESET}"
     in2csv "$XLSX" > "${TEMP_CSV}" && rm "$XLSX"
-    echo ""
 
     # 2. turn the _temp.csv header into snakecase ('Column Name' -> 'column_name')
     echo "${BOLD}${GREEN}==> ${WHITE}Clean ${GREEN}${TEMP_CSV} ${WHITE}headers${RESET}"
@@ -168,6 +167,7 @@ for ZIP_PATH in "$@"; do
     # IV. Turn .xslx files into .csvs
     for XLSX in *.xlsx ; do
         _turn_xlsx_into_csv "$XLSX"
+        echo ""
     done
 
     # V. Copy .csv into postgres
