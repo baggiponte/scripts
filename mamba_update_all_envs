@@ -20,6 +20,8 @@ echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
 # this is the case for the jupyter lab abb
 CONDA_ENVS="$(mamba env list | awk '$1 !~ /[#\/]/ { print $1 }')"
 
+echo -e "${BOLD}Environments to update:\n${CYAN}${CONDA_ENVS}${RESET}\n"
+
 for ENV in $CONDA_ENVS; do
     # ${RESET}${BOLD} is meant to produce white highlight (otherwise it is just too dim)
     echo -e "${BOLD}${CYAN}==> ${RESET}${BOLD}Checking for packages to update in ${CYAN}$ENV${RESET}...\n"
