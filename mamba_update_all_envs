@@ -11,11 +11,14 @@ source "$ZDOTDIR/colors.zsh"
 echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
 
 # lists all environments with conda
-    # awk is used to fetch only env names
-    # sed used to:
-    # - delete lines starting with #
-    # - delete blank lines (^$)
-CONDA_ENVS="$(mamba env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')" 
+
+# old version
+# CONDA_ENVS="$(mamba env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')" 
+
+# new version: skips lines that start with '#' or have blanks,
+# i.e. immediately start with the path to the environment
+# this is the case for the jupyter lab abb
+CONDA_ENVS="$(mamba env list | awk '$1 !~ /[#\/]/ { print $1 }')"
 
 for ENV in $CONDA_ENVS; do
     # ${RESET}${BOLD} is meant to produce white highlight (otherwise it is just too dim)
