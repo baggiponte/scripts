@@ -7,16 +7,18 @@ _create_table_if_not_exists () {
     DB_NAME="$2"
 
     echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${TABLE_NAME}${WHITE} exists${RESET}"
-    psql -c "SET datestyle TO iso, dmy;
+    psql -c "
+        SET datestyle TO iso, dmy;
+        SET timezone TO 'Europe/Rome';
 
         CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
             bici INT,
             tipo_bici VARCHAR(20),
             cliente_anonimizzato INT,
-            data_prelievo TIMESTAMP,
+            data_prelievo TIMESTAMPTZ,
             numero_stazione_prelievo INT,
             nome_stazione_prelievo TEXT,
-            data_restituzione TIMESTAMP,
+            data_restituzione TIMESTAMPTZ,
             numero_stazione_restituzione INT,
             nome_stazione_restituzione TEXT,
             distanza_totale REAL
