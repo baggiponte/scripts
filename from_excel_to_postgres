@@ -10,7 +10,7 @@
 # | DEFINE AUXILIARY FUNCTIONS |
 # ==============================
 
-_start_server_if_not_active () {
+_start_server () {
 
     #checks if the server is running
     if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
@@ -22,25 +22,40 @@ _start_server_if_not_active () {
     fi
 
     # lists where postgres binary and server location are
-    PG_STATUS=$(pg_ctl status -D /usr/local/var/postgres | sed "s/\"//g" |  awk "NR==2")
+    local pg_status
+    pg_status=$(pg_ctl status -D /usr/local/var/postgres | sed "s/\"//g" |  awk "NR==2")
 
-    echo -e "\n${BOLD}${WHITE}PostgreSQL binary:${BLUE}$(echo "$PG_STATUS" | awk 'BEGIN { FS = " " } ; {print $1}')${RESET}
-    ${BOLD}${WHITE}Server directory:${BLUE}$(echo "$PG_STATUS" | awk 'BEGIN { FS = " " } ; {print $3}')${RESET}"
+    echo -e "\n${BOLD}${WHITE}PostgreSQL binary:${BLUE}$(echo "$pg_status" | awk 'BEGIN { FS = " " } ; {print $1}')${RESET}
+    ${BOLD}${WHITE}Server directory:${BLUE}$(echo "$pg_status" | awk 'BEGIN { FS = " " } ; {print $3}')${RESET}"
 
 }
 
-_create_table_if_not_exists () {
+_create_schema () {
+    
+    local db_name="$1"
+    local schema_name="$2"
+
+    if [[ -z "${schema_name}" ]]
+    then
+        psql -d "$db_name" -c "CREATE SCHEMA IF NOT EXISTS ${schema_name};"
+    fi
+
+    psql -d "$db_name" -c "
+        ALTER DATABASE ${db_name} SET timezone TO 'Europe/Rome';
+        ALTER DATABASE ${db_name} SET search_path TO \"\$user\", ${schema_name}, public;
+    "
+
+}
+
+_create_table () {
 
     # define parameters
-    TABLE_NAME="$1"
-    DB_NAME="$2"
+    local db_name="$1"
+    local table_name="$2"
 
-    echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${TABLE_NAME}${WHITE} exists${RESET}"
-    psql -c "
-        SET datestyle TO iso, dmy;
-        SET timezone TO 'Europe/Rome';
-        
-        CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+    echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
+    psql -d "$db_name" -c "
+        CREATE TABLE IF NOT EXISTS ${table_name} (
             bici INT,
             tipo_bici VARCHAR(20),
             cliente_anonimizzato INT,
@@ -51,22 +66,22 @@ _create_table_if_not_exists () {
             numero_stazione_restituzione INT,
             nome_stazione_restituzione TEXT,
             distanza_totale REAL
-        );" "$DB_NAME" 
+        );" 
     echo ""
 
 }
 
 _unzip_all () {
 
-    PATH_TO_ZIP="$1"
-    EXTRACTION_DIR="$2"
+    local path_to_zip="$1"
+    local path_to_extraction="$2"
 
-    echo "${BOLD}${BLUE}=> ${WHITE}Create the extraction directory ${BLUE}${EXTRACTION_DIR}${RESET}"
-    mkdir -p "$EXTRACTION_DIR"
+    echo "${BOLD}${BLUE}=> ${WHITE}Create the extraction directory ${BLUE}${path_to_extraction}${RESET}"
+    mkdir -p "$path_to_extraction"
 
     # unzip the file into the extraction directory
-    echo -e "\n${BOLD}${BLUE}=> ${WHITE}Unzip ${BLUE}${PATH_TO_ZIP}${RESET}"
-    unzip "$PATH_TO_ZIP" -d "$EXTRACTION_DIR"
+    echo -e "\n${BOLD}${BLUE}=> ${WHITE}Unzip ${BLUE}${path_to_zip}${RESET}"
+    unzip "$path_to_zip" -d "$path_to_extraction"
     echo ""
 
 }
@@ -74,64 +89,66 @@ _unzip_all () {
 _clean_headers () {
 
     # redefine inputs
-    FILE="$1"
+    local file="$1"
 
     # takes the header of the file and changes it to snake-case
-    NEW_HEADER=$(head -1 "$FILE" | tr "[:upper:]" "[:lower:]" | tr " " "_") 
+    local new_header
+    new_header=$(head -1 "$file" | tr "[:upper:]" "[:lower:]" | tr " " "_") 
 
     # substitutes to the first row of the csv the newly formatted one; then outputs the file.
     # note that sed requires creating a backup file (ending with .bak): we remove it
-    sed -i .bak "1s/.*/$NEW_HEADER/" "$FILE" && rm "${FILE}.bak"
+    sed -i .bak "1s/.*/$new_header/" "$file" && rm "${file}.bak"
 
 }
 
 _turn_xlsx_into_csv () {
 
     # redefine input(s)
-    XLSX="$1"
+    local xlsx="$1"
     # the name of the temporary csv
-    TEMP_CSV="${XLSX/.xlsx/_temp.csv}"
+    local temp_csv="${xlsx/.xlsx/_temp.csv}"
     # the name of the output csv
-    CSV="${TEMP_CSV/_temp}"
+    local csv="${temp_csv/_temp}"
 
     # 1. convert the .xlsx into a _temp.csv file, then remove the .xlsx file
-    echo "${BOLD}${GREEN}==> ${WHITE}Convert ${GREEN}${XLSX} ${WHITE}to ${GREEN}${TEMP_CSV}${RESET}"
-    in2csv "$XLSX" > "${TEMP_CSV}" && rm "$XLSX"
+    echo "${BOLD}${GREEN}==> ${WHITE}Convert ${GREEN}${xlsx} ${WHITE}to ${GREEN}${temp_csv}${RESET}"
+    in2csv "$xlsx" > "${temp_csv}" && rm "$xlsx"
 
     # 2. turn the _temp.csv header into snakecase ('Column Name' -> 'column_name')
-    echo "${BOLD}${GREEN}==> ${WHITE}Clean ${GREEN}${TEMP_CSV} ${WHITE}headers${RESET}"
-    _clean_headers "${TEMP_CSV}"
+    echo "${BOLD}${GREEN}==> ${WHITE}Clean ${GREEN}${temp_csv} ${WHITE}headers${RESET}"
+    _clean_headers "${temp_csv}"
 
     # 3. selects only the columns needed
-    echo "${BOLD}${GREEN}==> ${WHITE}Select the columns and remove incompatible rows from ${GREEN}${TEMP_CSV}${RESET}"
-    xsv search -v -s 1 '^[a-zA-Z]' "${TEMP_CSV}" | \
-        xsv select "1-3,5-7,10-12,15" "${TEMP_CSV}" > "${CSV}" && rm "${TEMP_CSV}"
+    echo "${BOLD}${GREEN}==> ${WHITE}Select the columns and remove incompatible rows from ${GREEN}${temp_csv}${RESET}"
+    xsv search -v -s 1 '^[a-zA-Z]' "${temp_csv}" | \
+        xsv select "1-3,5-7,10-12,15" "${temp_csv}" > "${csv}" && rm "${temp_csv}"
 
 } 
 
 _copy_csv_into_postgres () {
 
     # define parameters
-    CSV="$1"
-    TABLE_NAME="$2"
-    DB_NAME="$3"
+    local csv="$1"
+    local table_name="$2"
+    local db_name="$3"
 
     # store the columns of the csv as an array
-    COLS="$( head -1 "$CSV" )"
+    local cols
+    cols="$( head -1 "$csv" )"
     
     # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
-    echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${CSV} ${WHITE}to ${BLUE}${TABLE_NAME} ${WHITE}in ${VIOLET}${DB_NAME}${RESET}"
-    psql -c "SET datestyle TO iso, dmy; COPY ${TABLE_NAME}(${COLS}) FROM '${PWD}/${CSV}' DELIMITER ',' CSV HEADER;" "$DB_NAME"
+    echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${csv} ${WHITE}to ${BLUE}${table_name} ${WHITE}in ${VIOLET}${db_name}${RESET}"
+    psql -d "$db_name" -c "SET datestyle TO iso, dmy; COPY ${table_name}(${cols}) FROM '${PWD}/${csv}' DELIMITER ',' CSV HEADER;"
 
 }
 
 _zip_csvs_and_remove_dir () {
 
-    EXEC_DIR="$1"
+    local exec_dir="$1"
 
     # zip recursively all files in the extraction dir
-    echo -e "${BOLD}${BLUE}=>${WHITE} Backing up ${BLUE}${EXEC_DIR}${RESET}"
-    zip -9 "${EXEC_DIR}_csv.zip" "${EXEC_DIR}"/*.csv && rm -rf "$EXEC_DIR"
+    echo -e "${BOLD}${BLUE}=>${WHITE} Backing up ${BLUE}${exec_dir}${RESET}"
+    zip -9 "${exec_dir}_csv.zip" "${exec_dir}"/*.csv && rm -rf "$exec_dir"
 
 }
 
@@ -143,48 +160,39 @@ _zip_csvs_and_remove_dir () {
 source "./formatting_colors"
 
 # 1. define variables for postgres
-# I need to reimplement this with getopt
-TABLE_NAME="bikemi_rentals"
-DB_NAME="bikemi"
+_DB_NAME="bikemi"
+_SCHEMA_NAME="bikemi_rentals"
+_TABLE_NAME="bikemi_source_data"
 
-# 2. see if the server is running 
-_start_server_if_not_active
+_start_server
+_create_schema "$_DB_NAME" "$_SCHEMA_NAME"
+_create_table "$_DB_NAME" "$_TABLE_NAME"
 
-# 3. check if our target table exists, else create it
-_create_table_if_not_exists "$TABLE_NAME" "$DB_NAME"
+for _ZIP_PATH in "$@"; do
 
-# 4. Iterate over zip files
-for ZIP_PATH in "$@"; do
+    _EXTRACTION_DIR="${_ZIP_PATH/.zip}" 
+    _unzip_all "$_ZIP_PATH" "$_EXTRACTION_DIR"
 
-    # I. Unzip in a dedicated folder
-    EXTRACTION_DIR="${ZIP_PATH/.zip}" 
-    _unzip_all "$ZIP_PATH" "$EXTRACTION_DIR"
+    pushd "$_EXTRACTION_DIR" 1>/dev/null || exit
 
-    # II. Temporarily cd into EXTRACTION_DIR
-    pushd "$EXTRACTION_DIR" 1>/dev/null || exit
-
-    # III. Clean filenames in EXTRACTION_DIR
-    for FILE in * ; do
-        echo "${BOLD}${CYAN}==> ${WHITE}Renaming ${CYAN}${FILE}${RESET}"
-        rename -z "$FILE"
+    for _FILE in * ; do
+        echo "${BOLD}${CYAN}==> ${WHITE}Renaming ${CYAN}${_FILE}${RESET}"
+        rename -z "$_FILE"
     done
     echo ""
 
-    # IV. Turn .xslx files into .csvs
-    for XLSX in *.xlsx ; do
-        _turn_xlsx_into_csv "$XLSX"
+    for _XLSX in *.xlsx ; do
+        _turn_xlsx_into_csv "$_XLSX"
         echo ""
     done
 
-    # V. Copy .csv into postgres
-    for CSV in *.csv ; do
-        _copy_csv_into_postgres "$CSV" "$TABLE_NAME" "$DB_NAME"
+    for _CSV in *.csv ; do
+        _copy_csv_into_postgres "$_CSV" "$_TABLE_NAME" "$_DB_NAME"
     done
 
-    # temporarily move up to zip the csvs and remove the directory
     pushd .. 1>/dev/null || exit
 
-    _zip_csvs_and_remove_dir "$EXTRACTION_DIR"
+    _zip_csvs_and_remove_dir "$_EXTRACTION_DIR"
 
     # move back to the original directory
     pushd +2 1>/dev/null || exit

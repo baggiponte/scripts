@@ -2,17 +2,19 @@
 
 _filter_out_invalid_rows () {
 
-CSV="$1"
-TEMP="${CSV/.csv/_temp.csv}"
+local csv="$1"
+local temp="${csv/.csv/_temp.csv}"
 
-xsv search -v -s 1 '^[A-Za-z]' "$CSV" > "$TEMP" && mv "$TEMP" "$CSV"
+xsv search -v -s 1 '^[A-Za-z]' "$csv" > "$temp" && mv "$temp" "$csv"
 
 }
 
+# BODY
+
 DIR="${1:-"${PWD}"}"
 
-for CSV in "${DIR}"/*.csv ; do
-    echo "filtering rows of ${CSV}"
-    _filter_out_invalid_rows "$CSV"
+for _CSV in "${DIR}"/*.csv ; do
+    echo "filtering rows of ${_CSV}"
+    _filter_out_invalid_rows "$_CSV"
     echo ""
 done

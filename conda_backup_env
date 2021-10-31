@@ -10,25 +10,25 @@ source "$CONDA_ROOT/etc/profile.d/conda.sh"
 source "$ZDOTDIR/colors.zsh"
 
 # define your own backup directory - mine is at ~/.config/conda_envs_backups
-CONDA_ENVS_BACKUP_DIR="${CACHE}/conda_envs_backups"
+_CONDA_ENVS_BACKUP_DIR="${CACHE}/conda_envs_backups"
 
 # check if the directory where the package list exists, else make it
-if [[ ! -d "$CONDA_ENVS_BACKUP_DIR" ]]; then
-    echo -e "\nBackup directory created at \"${CONDA_ENVS_BACKUP_DIR}\"."
-    mkdir -p "${CONDA_ENVS_BACKUP_DIR}"
+if [[ ! -d "$_CONDA_ENVS_BACKUP_DIR" ]]; then
+    echo -e "\nBackup directory created at \"${_CONDA_ENVS_BACKUP_DIR}\"."
+    mkdir -p "${_CONDA_ENVS_BACKUP_DIR}"
 else
-    echo -e "\nBackup directory already exists at \"${CONDA_ENVS_BACKUP_DIR}\"."
+    echo -e "\nBackup directory already exists at \"${_CONDA_ENVS_BACKUP_DIR}\"."
 fi
 
 # $@ indicates every argument of the script
-for ENV in "$@"; do
+for _ENV in "$@"; do
 
     # creates a list of the packages in the specified directory, adding a date stamp
-    echo -e "\n${BOLD}Exporting packages' list in ${CYAN}${ENV}${RESET}${BOLD}...${RESET}"
-    conda list --export > "${CONDA_ENVS_BACKUP_DIR}/${ENV}_backup_$(date +"%Y-%m-%d").yml"
+    echo -e "\n${BOLD}Exporting packages' list in ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
+    conda list --export > "${_CONDA_ENVS_BACKUP_DIR}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
 
     # removes the ENV: DOES NOT ASK FOR CONFIRMATION!
-    echo "${BOLD}Deleting environment ${CYAN}${ENV}${RESET}${BOLD}...${RESET}"
-    conda env remove --name "${ENV}"
+    echo "${BOLD}Deleting environment ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
+    conda env remove --name "${_ENV}"
 
 done

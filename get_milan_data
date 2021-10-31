@@ -2,23 +2,23 @@
 
 get_data () {
 
-    DD_DIR="$1"
-    DOWNLOAD_FILE="$2"
-    URL="$3"
+    local downloads_subdir="$1"
+    local downloaded_file="$2"
+    local url="$3"
 
     # if the download dir does not exist, create it
-    [[ -d "$DD_DIR" ]] || mkdir -p "$DD_DIR"
+    [[ -d "$downloads_subdir" ]] || mkdir -p "$downloads_subdir"
 
-    echo -e "\n${BOLD}${BLUE}==>${RESET} ${BOLD}Downloading ${CYAN}${DOWNLOAD_FILE}${RESET}${BOLD} to ${BLUE}${DOWNLOAD_DIR}/${DD_DIR}${RESET}"
-    curl "$URL" -o "$DD_DIR/$DOWNLOAD_FILE"
+    echo -e "\n${BOLD}${BLUE}==>${RESET} ${BOLD}Downloading ${CYAN}${downloaded_file}${RESET}${BOLD} to ${BLUE}${_DOWNLOAD_DIR}/${downloads_subdir}${RESET}"
+    curl "$url" -o "$downloads_subdir/$downloaded_file"
 
 }
 
 source "./formatting_colors"
 
-DOWNLOAD_DIR=${1:-"$HOME/tesi/data"}
+_DOWNLOAD_DIR=${1:-"$HOME/tesi/data"}
 
-pushd "$DOWNLOAD_DIR" 1>/dev/null || exit
+pushd "$_DOWNLOAD_DIR" 1>/dev/null || exit
 
 get_data bikemi_metadata bikemi_stalls.csv "https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv"
 

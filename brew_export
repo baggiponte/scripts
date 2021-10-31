@@ -2,14 +2,14 @@
 
 source "$ZDOTDIR/colors.zsh"
 
-BREW_CACHE="$HOME/.cache/brew/cache"
+_BREW_CACHE="$HOME/.cache/brew/cache"
 
-if [[ ! -d "$BREW_CACHE" ]]; then
-    mkdir -p "$BREW_CACHE"
+if [[ ! -d "$_BREW_CACHE" ]]; then
+    mkdir -p "$_BREW_CACHE"
 fi
 
-echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${BREW_CACHE}${RESET}${BOLD}...${RESET}"
-brew list --formula > "${BREW_CACHE}"/brew_formulae.txt
+echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
+brew list --formula > "${_BREW_CACHE}"/brew_formulae.txt
 
-echo -e "\n${BOLD}Exporting Homebrew casks to ${CYAN}${BREW_CACHE}${RESET}${BOLD}...${RESET}"
-brew list --cask > "${BREW_CACHE}"/brew_cask.txt
+echo -e "\n${BOLD}Exporting Homebrew casks to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
+brew list --cask > "${_BREW_CACHE}"/brew_cask.txt
