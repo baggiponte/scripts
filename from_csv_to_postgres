@@ -50,14 +50,14 @@ _create_table () {
     echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
     psql -d "$db_name" -c "
         CREATE TABLE IF NOT EXISTS ${table_name} (
-            bici INT,
+            bici SMALLINT,
             tipo_bici VARCHAR(20),
-            cliente_anonimizzato INT,
+            cliente_anonimizzato SMALLINT,
             data_prelievo TIMESTAMPTZ,
-            numero_stazione_prelievo INT,
+            numero_stazione_prelievo SMALLINT,
             nome_stazione_prelievo TEXT,
             data_restituzione TIMESTAMPTZ,
-            numero_stazione_restituzione INT,
+            numero_stazione_restituzione SMALLINT,
             nome_stazione_restituzione TEXT,
             distanza_totale REAL
         );" 

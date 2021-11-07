@@ -58,12 +58,12 @@ _create_table () {
         CREATE TABLE IF NOT EXISTS ${table_name} (
             bici INT,
             tipo_bici VARCHAR(20),
-            cliente_anonimizzato INT,
+            cliente_anonimizzato SMALLINT,
             data_prelievo TIMESTAMPTZ,
-            numero_stazione_prelievo INT,
+            numero_stazione_prelievo SMALLINT,
             nome_stazione_prelievo TEXT,
             data_restituzione TIMESTAMPTZ,
-            numero_stazione_restituzione INT,
+            numero_stazione_restituzione SMALLINT,
             nome_stazione_restituzione TEXT,
             distanza_totale REAL
         );" 
