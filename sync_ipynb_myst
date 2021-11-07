@@ -101,7 +101,7 @@ while true ; do
         
                 break;;
 
-            * ) echo "Enter y or n, please.";;
+            * ) echo "Enter P or S, please.";;
     esac
 done
 
