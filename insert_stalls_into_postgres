@@ -1,0 +1,107 @@
+#! /usr/bin/env bash
+
+_get_bikemi_stalls_data () {
+
+    local url="$1"
+    local filename="$2"
+
+    curl "$url" -o "$filename"
+}
+
+_process_stalls_data () {
+    
+    local target_file="$1"
+    local destination_file="$2"
+    local new_header="numero_stazione,nome,municipio,anno,geometry"
+
+    sed "s/;/,/g" "$target_file" | xsv select 3,4,11,12,15 | sed "1s/.*/$new_header/" > "$destination_file"
+
+}
+
+_start_server () {
+
+    local server="${1:-"/usr/local/var/postgres"}"
+
+    #checks if the server is running
+    if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
+        echo -e "\n${BOLD}${RED}==> Postgres server is not running, starting the server...${RESET}"
+        # starts the server, deletes output
+        pg_ctl start -D "$server" > /dev/null 2>&1
+    else
+        echo -e "\n${CYAN}${BOLD}==> Postgres server is already running.${RESET}"
+    fi
+
+    # lists where postgres binary and server location are
+    local pg_status
+    pg_status=$(pg_ctl status -D "$server" | sed "s/\"//g" |  awk "NR==2")
+
+    echo -e "\n${BOLD}${WHITE}PostgreSQL binary:${BLUE}$(echo "$pg_status" | awk 'BEGIN { FS = " " } ; {print $1}')${RESET}
+    ${BOLD}${WHITE}Server directory:${BLUE}$(echo "$pg_status" | awk 'BEGIN { FS = " " } ; {print $3}')${RESET}"
+
+}
+
+_create_table () {
+
+    # define parameters
+    local db_name="$1"
+    local table_name="$2"
+
+    echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
+    psql -d "$db_name" -c "
+        CREATE TABLE IF NOT EXISTS ${table_name} (
+            numero_stazione SMALLINT PRIMARY KEY
+            , nome TEXT
+            , municipio SMALLINT 
+            , anno SMALLINT
+            , geometry TEXT
+        );" 
+    echo ""
+
+}
+
+_import_data_into_postgres () {
+    
+    # define parameters
+    local csv="$1"
+    local table_name="$2"
+    local db_name="$3"
+
+    # store the columns of the csv as an array
+    local cols
+    cols="$( head -1 "$csv" )"
+    
+    # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
+    echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${csv} ${WHITE}to ${BLUE}${table_name} ${WHITE}in ${VIOLET}${db_name}${RESET}"
+    psql -d "$db_name" -c "SET datestyle TO iso, dmy; COPY ${table_name}(${cols}) FROM '${PWD}/${csv}' DELIMITER ',' CSV HEADER;"
+
+}
+
+# colored output
+source "./formatting_colors"
+
+# define global variables
+
+_URL="https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv"
+
+_TARGET_DIR="${1:-"$HOME/tesi/data/milan"}"
+_FILE_NAME="${2:-"bikemi-stazioni.csv"}"
+_PROCESSED_FILE="${_FILE_NAME/.csv/_processed.csv}"
+
+_DB_NAME="bikemi"
+_TABLE_NAME="bikemi_stalls"
+_SERVER="/usr/local/var/postgres"
+
+# script body
+pushd "$_TARGET_DIR" 1>/dev/null || exit
+
+_get_bikemi_stalls_data "$_URL" "$_FILE_NAME"
+
+_process_stalls_data "$_FILE_NAME" "$_PROCESSED_FILE"  
+
+_start_server "$_SERVER"
+
+_create_table "$_DB_NAME" "$_TABLE_NAME"
+
+_import_data_into_postgres "$_PROCESSED_FILE" "$_TABLE_NAME" "$_DB_NAME"
+
+popd 1>/dev/null || exit
