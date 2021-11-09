@@ -1,12 +1,12 @@
 #! /usr/bin/env bash
 
-_process_data () {
-    
-    local input_file="$1"
-    local output_file="$2"
-
-    xsv select '!3' "$input_file" > "$output_file"
-}
+# _process_data () {
+#     
+#     local input_file="$1"
+#     local output_file="$2"
+# 
+#     xsv select '!3' "$input_file" > "$output_file"
+# }
 
 _check_server () {
 
@@ -29,9 +29,13 @@ _create_table () {
 
     echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
     psql -d "$db_name" -c "
+        DROP TABLE IF EXISTS ${table_name}; 
+        
         CREATE TABLE IF NOT EXISTS ${table_name} (
             numero_stazione SMALLINT PRIMARY KEY,
-            nome TEXT,
+            nome_stazione TEXT,
+            longitudine FLOAT,
+            latitudine FLOAT,
             anno SMALLINT,
             nil TEXT,
             id_nil SMALLINT,
@@ -57,7 +61,7 @@ _import_data_into_postgres () {
     psql -d "$db_name" -c "
         SET datestyle TO iso, dmy;
         COPY ${table_name}(${cols})
-        FROM '${PWD}/${csv}'
+        FROM '${csv}'
         DELIMITER ','
         CSV HEADER;" \
         && rm "$csv"
@@ -75,7 +79,7 @@ source formatting_colors
 # +------------------+
 
 _INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls.csv"}"
-_TMP_FILE="${1}.tmp"
+# _TMP_FILE="${1}.tmp"
 
 _TABLE_NAME="bikemi_selected_stalls"
 _DB_NAME="bikemi"
@@ -84,8 +88,8 @@ _DB_NAME="bikemi"
 # | body |
 # +------+
 
-_process_data "$_INPUT_FILE" "$_TMP_FILE" || exit 
+# _process_data "$_INPUT_FILE" "$_TMP_FILE" || exit 
 
 _check_server
 
-_create_table "$_TABLE_NAME" "$_DB_NAME" && _import_data_into_postgres "$_TMP_FILE" "$_TABLE_NAME" "$_DB_NAME"
+_create_table "$_TABLE_NAME" "$_DB_NAME" && _import_data_into_postgres "$_INPUT_FILE" "$_TABLE_NAME" "$_DB_NAME"
