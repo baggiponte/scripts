@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# =================
+# +---------------+
 # | EXAMPLE USAGE |
-# =================
+# +---------------+
 
 # from_excel_to_postgres path/to/zipfile1 path/to/zipfile2
 
-# ==============================
+# +----------------------------+
 # | DEFINE AUXILIARY FUNCTIONS |
-# ==============================
+# -----------------------------+
 
 _start_server () {
 
@@ -32,8 +32,8 @@ _start_server () {
 
 _create_schema () {
     
-    local db_name="$1"
-    local schema_name="$2"
+    local schema_name="$1"
+    local db_name="$2"
 
     if [[ -z "${schema_name}" ]]
     then
@@ -50,8 +50,8 @@ _create_schema () {
 _create_table () {
 
     # define parameters
-    local db_name="$1"
-    local table_name="$2"
+    local table_name="$1"
+    local db_name="$2"
 
     echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
     psql -d "$db_name" -c "
@@ -138,7 +138,12 @@ _copy_csv_into_postgres () {
     
     # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
     echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${csv} ${WHITE}to ${BLUE}${table_name} ${WHITE}in ${VIOLET}${db_name}${RESET}"
-    psql -d "$db_name" -c "SET datestyle TO iso, dmy; COPY ${table_name}(${cols}) FROM '${PWD}/${csv}' DELIMITER ',' CSV HEADER;"
+    psql -d "$db_name" -c "
+        SET datestyle TO iso, dmy;
+        COPY ${table_name}(${cols})
+        FROM '${PWD}/${csv}'
+        DELIMITER ','
+        CSV HEADER;"
 
 }
 
@@ -152,9 +157,9 @@ _zip_csvs_and_remove_dir () {
 
 }
 
-# ===============
-# | SCRIPT BODY |
-# ===============
+# +-------------+
+# | GLOBAL VARS |
+# +-------------+
 
 # colored output "trick"
 source "./formatting_colors"
@@ -164,9 +169,13 @@ _DB_NAME="bikemi"
 _SCHEMA_NAME="bikemi_rentals"
 _TABLE_NAME="bikemi_source_data"
 
+# +-------------+
+# | SCRIPT BODY |
+# +-------------+
+
 _start_server
-_create_schema "$_DB_NAME" "$_SCHEMA_NAME"
-_create_table "$_DB_NAME" "$_TABLE_NAME"
+_create_schema "$_SCHEMA_NAME" "$_DB_NAME"
+_create_table "$_TABLE_NAME" "$_DB_NAME"
 
 for _ZIP_PATH in "$@"; do
 

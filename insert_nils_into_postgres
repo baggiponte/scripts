@@ -12,11 +12,12 @@ _process_stalls_data () {
     
     local target_file="$1"
     local destination_file="$2"
-    local new_header="numero_stazione,nome,municipio,anno,geometry"
+    local new_header="id_nil,nil,geometry"
 
-    xsv select 3,4,11,12,15 --delimiter ";" "$target_file" | \
+    xsv select 1,2,11 --delimiter ";" "$target_file" | \
         sed "1s/.*/$new_header/" > "$destination_file" \
         && rm "$target_file"
+
 }
 
 _start_server () {
@@ -43,10 +44,8 @@ _create_table () {
     echo -e "\n${BOLD}${BLUE}=>${WHITE} Checking if table ${BLUE}${table_name}${WHITE} exists${RESET}"
     psql -d "$db_name" -c "
         CREATE TABLE IF NOT EXISTS ${table_name} (
-            numero_stazione SMALLINT PRIMARY KEY
-            , nome TEXT
-            , municipio SMALLINT 
-            , anno SMALLINT
+            id_nil SMALLINT PRIMARY KEY
+            , nil TEXT
             , geometry TEXT
         );" 
     echo ""
@@ -67,13 +66,12 @@ _import_data_into_postgres () {
     # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
     echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${csv} ${WHITE}to ${BLUE}${table_name} ${WHITE}in ${VIOLET}${db_name}${RESET}"
     psql -d "$db_name" -c "
-        SET datestyle TO iso, dmy; 
+        SET datestyle TO iso, dmy;
         COPY ${table_name}(${cols})
         FROM '${PWD}/${csv}'
         DELIMITER ','
         CSV HEADER;" \
         && rm "$csv"
-
 }
 
 # colored output
@@ -81,27 +79,23 @@ source "./formatting_colors"
 
 # define global variables
 
-_URL="https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv"
+_URL="https://dati.comune.milano.it/dataset/e8e765fc-d882-40b8-95d8-16ff3d39eb7c/resource/3fce7202-0076-4a7b-ac2c-d2ab9b5dc658/download/ds964_nil_wm_4326.csv"
 
 _TARGET_DIR="${1:-"$HOME/tesi/data/milan"}"
-_FILE_NAME="${2:-"bikemi-stazioni.csv"}"
-_PROCESSED_FILE="${_FILE_NAME/.csv/_processed.csv}"
+_FILE_NAME="${2:-"administrative-nils.csv"}"
+_PROCESSED_FILE="${_FILE_NAME}.tmp"
 
 _DB_NAME="bikemi"
-_TABLE_NAME="bikemi_stations"
+_TABLE_NAME="milan_nils"
 _SERVER="/usr/local/var/postgres"
 
 # script body
 pushd "$_TARGET_DIR" 1>/dev/null || exit
 
-_get_bikemi_stalls_data "$_URL" "$_FILE_NAME"
-
-_process_stalls_data "$_FILE_NAME" "$_PROCESSED_FILE"  
+_get_bikemi_stalls_data "$_URL" "$_FILE_NAME" && _process_stalls_data "$_FILE_NAME" "$_PROCESSED_FILE" || exit
 
 _start_server "$_SERVER"
 
-_create_table "$_TABLE_NAME" "$_DB_NAME"
-
-_import_data_into_postgres "$_PROCESSED_FILE" "$_TABLE_NAME" "$_DB_NAME"
+_create_table "$_TABLE_NAME" "$_DB_NAME" && _import_data_into_postgres "$_PROCESSED_FILE" "$_TABLE_NAME" "$_DB_NAME"
 
 popd 1>/dev/null || exit
