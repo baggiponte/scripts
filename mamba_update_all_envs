@@ -6,7 +6,7 @@
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
 
 # sourcing variables to make formatted output
-source "$ZDOTDIR/colors.zsh"
+source formatting_colors 
 
 echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
 

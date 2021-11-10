@@ -1,0 +1,28 @@
+#! /usr/bin/env bash
+# updates every package out of all the list of conda environments.
+
+_export_jupyter_conda_env () {
+
+    local target_env="$1"
+    local export_file="$2"
+
+    echo -e "\n${BOLD}Exporting environment '${CYAN}${target_env}${RESET}${BOLD}' to '${CYAN}${export_file}${RESET}${BOLD}'...${RESET}\n"
+
+    mamba env export -n "$target_env" -f "$export_file"  
+}
+
+
+# this is necessary, otherwise won't find the command. see here:
+# https://github.com/conda/conda/issues/7980#issuecomment-441358406
+source "$CONDA_ROOT/etc/profile.d/conda.sh"
+source "$CONDA_ROOT/etc/profile.d/mamba.sh"
+
+# sourcing variables to make formatted output
+source formatting_colors 
+
+_TARGET_ENV="${1:-"jupyter"}"
+_TARGET_DIR="${2:-"$CACHE"}"
+
+_EXPORT_FILE="${_TARGET_DIR}/jupyter_environment.yml"
+
+_export_jupyter_conda_env "$_TARGET_ENV" "$_EXPORT_FILE"
