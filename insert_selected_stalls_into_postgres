@@ -78,8 +78,7 @@ source formatting_colors
 # | global variables |
 # +------------------+
 
-_INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls.csv"}"
-# _TMP_FILE="${1}.tmp"
+_INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls-with_nils.csv"}"
 
 _TABLE_NAME="bikemi_selected_stalls"
 _DB_NAME="bikemi"
