@@ -8,7 +8,7 @@ update_all_envs(){
     local conda_envs
     conda_envs="$(mamba env list | awk 'NR > 3 { print $1 }')"
     
-    echo -e "${BOLD}Environments to update:\n${CYAN}${_CONDA_ENVS}${RESET}\n"
+    echo -e "${BOLD}Environments to update:\n${CYAN}${conda_envs}${RESET}\n"
     
     for env in $conda_envs ; do
 
