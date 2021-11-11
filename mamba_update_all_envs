@@ -1,36 +1,43 @@
 #! /usr/bin/env bash
 # updates every package out of all the list of conda environments.
 
+update_all_envs(){
+    echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
+    
+    # take all environments except base
+    local conda_envs
+    conda_envs="$(mamba env list | awk 'NR > 3 { print $1 }')"
+    
+    echo -e "${BOLD}Environments to update:\n${CYAN}${_CONDA_ENVS}${RESET}\n"
+    
+    for env in $conda_envs ; do
+
+        echo -e "${BOLD}${CYAN}==> ${RESET}${BOLD}Checking for packages to update in ${CYAN}$env${RESET}...\n"
+
+        mamba update --all -n "$env" -y -c conda-forge;
+        
+        echo -e "${BOLD}Packages in ${CYAN}$env${RESET}${BOLD} are up to date.${RESET}\n"
+    
+    done
+} 
+
+clean_all () {
+    echo -e "${BOLD}Environments have been updated. Cleaning the tarballs... ${RESET}\n"
+    
+    mamba clean --all -y
+    
+    echo -e "\n${BOLD}Tarballs removed.${RESET}"
+}
+
 # this is necessary, otherwise won't find the command. see here:
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
+source "$CONDA_ROOT/etc/profile.d/mamba.sh"
 
 # sourcing variables to make formatted output
 source formatting_colors 
 
-echo -e "\n${BOLD}Fetching the environments...${RESET}\n"
+update_all_envs
 
-# lists all environments with conda
+clean_all
 
-# old version
-# _CONDA_ENVS="$(mamba env list | awk '{print $1}' | sed -e '/#/d' -e '/^$/d')" 
-
-# new version: skips lines that start with '#' or have blanks,
-# i.e. immediately start with the path to the environment
-# this is the case for the jupyter lab abb
-_CONDA_ENVS="$(mamba env list | awk '$1 !~ /[#\/]/ { print $1 }')"
-
-echo -e "${BOLD}Environments to update:\n${CYAN}${_CONDA_ENVS}${RESET}\n"
-
-for _ENV in $_CONDA_ENVS; do
-    # ${RESET}${BOLD} is meant to produce white highlight (otherwise it is just too dim)
-    echo -e "${BOLD}${CYAN}==> ${RESET}${BOLD}Checking for packages to update in ${CYAN}$_ENV${RESET}...\n"
-    mamba update --all -n "$_ENV" -y -c conda-forge;
-    echo -e "${BOLD}Packages in ${CYAN}$_ENV ${RESET}${BOLD}are up to date.${RESET}\n"
-done
-
-echo -e "${BOLD}Environments have been updated. Cleaning the tarballs... ${RESET}\n"
-
-mamba clean --all -y
-
-echo -e "\n${BOLD}Tarballs removed.${RESET}"
