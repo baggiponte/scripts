@@ -36,10 +36,11 @@ _create_table () {
             nome_stazione TEXT,
             longitudine FLOAT,
             latitudine FLOAT,
-            anno SMALLINT,
-            nil TEXT,
-            id_nil SMALLINT,
-            municipio SMALLINT
+            cluster SMALLINT,
+            lon_cluster FLOAT,
+            lat_cluster FLOAT,
+            cluster_id_nil SMALLINT,
+            cluster_nil TEXT
         );" 
     echo ""
 
@@ -78,17 +79,18 @@ source formatting_colors
 # | global variables |
 # +------------------+
 
-_INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls-with_nils.csv"}"
+_INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls-clusters.csv"}"
 
-_TABLE_NAME="bikemi_selected_stalls"
-_DB_NAME="bikemi"
+_TABLE_NAME="${2:-"bikemi_clustered_stalls"}"
+_SCHEMA="${3:-"bikemi_rentals"}"
+_DB_NAME="${4:-"bikemi"}"
+
+_TABLE="${_SCHEMA}.${_TABLE_NAME}"
 
 # +------+
 # | body |
 # +------+
 
-# _process_data "$_INPUT_FILE" "$_TMP_FILE" || exit 
-
 _check_server
 
-_create_table "$_TABLE_NAME" "$_DB_NAME" && _import_data_into_postgres "$_INPUT_FILE" "$_TABLE_NAME" "$_DB_NAME"
+_create_table "$_TABLE" "$_DB_NAME" && _import_data_into_postgres "$_INPUT_FILE" "$_TABLE" "$_DB_NAME"
