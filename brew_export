@@ -9,7 +9,7 @@ if [[ ! -d "$_BREW_CACHE" ]]; then
 fi
 
 echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
-brew list --formula > "${_BREW_CACHE}"/brew_formulae.txt
+brew leaves -r > "${_BREW_CACHE}"/brew_formulae.txt
 
 echo -e "\n${BOLD}Exporting Homebrew casks to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
 brew list --cask > "${_BREW_CACHE}"/brew_cask.txt
