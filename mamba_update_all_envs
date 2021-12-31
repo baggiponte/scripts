@@ -30,7 +30,7 @@ clean_all () {
 }
 
 # this is necessary, otherwise won't find the command. see here:
-# https://github.com/conda/conda/issues/7980#issuecomment-441358406
+# https://github.com/conda/conda/issues/7980#issuecomment-96682413
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
 source "$CONDA_ROOT/etc/profile.d/mamba.sh"
 

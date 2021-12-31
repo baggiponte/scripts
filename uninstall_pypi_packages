@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+_ENV="${1:-"$CONDA_DEFAULT_ENV"}"
+
+# https://github.com/conda/conda/issues/7980#issuecomment-96682413
+source "$CONDA_ROOT/etc/profile.d/conda.sh"
+source "$CONDA_ROOT/etc/profile.d/mamba.sh"
+
+mamba list --name "$_ENV" | awk 'NR > 3 && $4 == "pypi" {print $1}' | xargs pip uninstall --yes
