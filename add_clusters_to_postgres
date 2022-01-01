@@ -81,7 +81,7 @@ source formatting_colors
 
 _INPUT_FILE="${1:-"$HOME/tesi/data/milan/bikemi-selected_stalls-clusters.csv"}"
 
-_TABLE_NAME="${2:-"bikemi_clustered_stalls"}"
+_TABLE_NAME="${2:-"bikemi_stalls_clusters"}"
 _SCHEMA="${3:-"bikemi_rentals"}"
 _DB_NAME="${4:-"bikemi"}"
 

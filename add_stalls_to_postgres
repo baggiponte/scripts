@@ -88,7 +88,7 @@ _FILE_NAME="${2:-"bikemi-stazioni.csv"}"
 _PROCESSED_FILE="${_FILE_NAME/.csv/_processed.csv}"
 
 _DB_NAME="bikemi"
-_TABLE_NAME="bikemi_stations"
+_TABLE_NAME="bikemi_stalls"
 _SERVER="/usr/local/var/postgres"
 
 # script body

@@ -167,7 +167,7 @@ source "./formatting_colors"
 # 1. define variables for postgres
 _DB_NAME="bikemi"
 _SCHEMA_NAME="bikemi_rentals"
-_TABLE_NAME="bikemi_source_data"
+_TABLE_NAME="bikemi_data"
 
 # +-------------+
 # | SCRIPT BODY |
