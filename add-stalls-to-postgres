@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+# +------------------+
+# | DEFINE FUNCTIONS |
+# +------------------+
+
 _get_bikemi_stalls_data () {
 
     local url="$1"
@@ -76,10 +80,12 @@ _import_data_into_postgres () {
 
 }
 
-# colored output
-source "./formatting_colors"
+# +-------------+
+# | GLOBAL VARS |
+# +-------------+
 
-# define global variables
+
+source "formatting-colors" # for colored output
 
 _URL="https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv"
 
@@ -91,7 +97,10 @@ _DB_NAME="bikemi"
 _TABLE_NAME="bikemi_stalls"
 _SERVER="/usr/local/var/postgres"
 
-# script body
+# +------+
+# | BODY |
+# +------+
+
 pushd "$_TARGET_DIR" 1>/dev/null || exit
 
 _get_bikemi_stalls_data "$_URL" "$_FILE_NAME"

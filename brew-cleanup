@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+. formatting-colors # for colored output
+
+echo -e "\n${BOLD}Removing unused formulae...${RESET}"
+brew leaves -p | xargs -L 1 brew uninstall
+
+echo -e "\n${BOLD}Remove lockfiles and outdated downloads...${RESET}"
+brew cleanup -s

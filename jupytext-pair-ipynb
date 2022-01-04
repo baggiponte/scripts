@@ -105,8 +105,8 @@ main () {
 # | Before running |
 # +----------------+
 
-source "formatting_colors"
-
+source "formatting-colors" # for coloured output
+  
 # +----------------+
 # | Define Globals |
 # +----------------+

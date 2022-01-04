@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "$ZDOTDIR/colors.zsh"
+. formatting-colors # for colored output
 
 _BREW_CACHE="$HOME/.cache/brew/cache"
 

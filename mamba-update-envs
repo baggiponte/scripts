@@ -1,0 +1,53 @@
+#! /usr/bin/env bash
+# updates every package out of all the list of conda environments.
+
+update_envs(){
+
+    local conda_envs=( "$@" )
+    
+    echo -e "${BOLD}Environments to update:\n${CYAN}${conda_envs[*]}${RESET}\n"
+    
+    for env in "${conda_envs[@]}" ; do
+
+        echo -e "${BOLD}${CYAN}==> ${RESET}${BOLD}Checking for packages to update in ${CYAN}$env${RESET}...\n"
+
+        mamba update --all -n "$env" -y -c conda-forge;
+        
+        echo -e "${BOLD}Packages in ${CYAN}$env${RESET}${BOLD} are up to date.${RESET}\n"
+    
+    done
+} 
+
+clean_all () {
+    echo -e "${BOLD}Environments have been updated. Cleaning the tarballs... ${RESET}\n"
+    
+    mamba clean --all -y
+    
+    echo -e "\n${BOLD}Tarballs removed.${RESET}"
+}
+
+# this is necessary, otherwise won't find the command.
+# both conda.sh and mamba.sh need to be sourced
+# https://github.com/conda/conda/issues/7980#issuecomment-96682413
+. "$CONDA_ROOT/etc/profile.d/conda.sh"
+. "$CONDA_ROOT/etc/profile.d/mamba.sh"
+
+. formatting-colors # colored echo output
+
+if [[ "$#" -eq 0 ]]
+then
+    # grab the list of envs.
+    # NR < $0 because conda prints one blank line last
+    # tr is used to obtain one string with ";" as separators
+    _ENVS_STR=$( mamba env list | awk 'NR > 2 && NR < $0 { print $1 }' | tr "\n" ";")
+    
+    # read as array using ";" as separator
+    IFS=";" read -ra _ENVS_ARR <<< "$_ENVS_STR"
+else 
+    _ENVS_ARR=( "$@" )
+fi
+
+update_envs "${_ENVS_ARR[@]}"
+
+clean_all
+

@@ -72,8 +72,7 @@ _import_data_into_postgres () {
 # | prep |
 # +------+
 
-# colored output
-source formatting_colors
+. formatting-colors # for colored output
 
 # +------------------+
 # | global variables |

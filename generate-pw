@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+_NUM_CHAR="${1:-32}"
+
+openssl rand -base64 "$_NUM_CHAR"

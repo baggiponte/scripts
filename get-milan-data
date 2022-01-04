@@ -14,7 +14,7 @@ get_data () {
 
 }
 
-source "./formatting_colors"
+source "formatting-colors"
 
 _DOWNLOAD_DIR=${1:-"$HOME/tesi/data"}
 

@@ -9,11 +9,9 @@ xsv search -v -s 1 '^[A-Za-z]' "$csv" > "$temp" && mv "$temp" "$csv"
 
 }
 
-# BODY
+_DIR="${1:-"${PWD}"}"
 
-DIR="${1:-"${PWD}"}"
-
-for _CSV in "${DIR}"/*.csv ; do
+for _CSV in "${_DIR}"/*.csv ; do
     echo "filtering rows of ${_CSV}"
     _filter_out_invalid_rows "$_CSV"
     echo ""

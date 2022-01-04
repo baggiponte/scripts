@@ -161,8 +161,7 @@ _zip_csvs_and_remove_dir () {
 # | GLOBAL VARS |
 # +-------------+
 
-# colored output "trick"
-source "./formatting_colors"
+source "formatting-colors" # for colored output
 
 # 1. define variables for postgres
 _DB_NAME="bikemi"

@@ -4,20 +4,18 @@
 
 # this is necessary, otherwise won't find the command. see here:
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
-source "$CONDA_ROOT/etc/profile.d/conda.sh"
+. "$CONDA_ROOT/etc/profile.d/mamba.sh"
 
-# source colors. this has to be done because subprocesses do not inherit environmental variables
-source "$ZDOTDIR/colors.zsh"
+. formatting-colors # for colored output
 
-# define your own backup directory - mine is at ~/.config/conda_envs_backups
-_CONDA_ENVS_BACKUP_DIR="${CACHE}/conda_envs_backups"
+_CONDA_ENVS_CACHE="${CACHE}/conda_envs_backups"
 
 # check if the directory where the package list exists, else make it
-if [[ ! -d "$_CONDA_ENVS_BACKUP_DIR" ]]; then
-    echo -e "\nBackup directory created at \"${_CONDA_ENVS_BACKUP_DIR}\"."
-    mkdir -p "${_CONDA_ENVS_BACKUP_DIR}"
+if [[ ! -d "$_CONDA_ENVS_CACHE" ]]; then
+    echo -e "\nBackup directory created at \"${_CONDA_ENVS_CACHE}\"."
+    mkdir -p "${_CONDA_ENVS_CACHE}"
 else
-    echo -e "\nBackup directory already exists at \"${_CONDA_ENVS_BACKUP_DIR}\"."
+    echo -e "\nBackup directory already exists at \"${_CONDA_ENVS_CACHE}\"."
 fi
 
 # $@ indicates every argument of the script
@@ -25,10 +23,10 @@ for _ENV in "$@"; do
 
     # creates a list of the packages in the specified directory, adding a date stamp
     echo -e "\n${BOLD}Exporting packages' list in ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
-    conda list --export > "${_CONDA_ENVS_BACKUP_DIR}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
+    mamba list --export > "${_CONDA_ENVS_CACHE}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
 
     # removes the ENV: DOES NOT ASK FOR CONFIRMATION!
     echo "${BOLD}Deleting environment ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
-    conda env remove --name "${_ENV}"
+    mamba env remove --name "${_ENV}"
 
 done
