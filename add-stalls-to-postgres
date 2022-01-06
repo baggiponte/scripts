@@ -4,7 +4,7 @@
 # | DEFINE FUNCTIONS |
 # +------------------+
 
-_get_bikemi_stalls_data () {
+_get_bikemi_stalls_data() {
 
     local url="$1"
     local filename="$2"
@@ -12,18 +12,18 @@ _get_bikemi_stalls_data () {
     curl "$url" -o "$filename"
 }
 
-_process_stalls_data () {
-    
+_process_stalls_data() {
+
     local target_file="$1"
     local destination_file="$2"
     local new_header="numero_stazione,nome,municipio,anno,geometry"
 
-    xsv select 3,4,11,12,15 --delimiter ";" "$target_file" | \
-        sed "1s/.*/$new_header/" > "$destination_file" \
-        && rm "$target_file"
+    xsv select 3,4,11,12,15 --delimiter ";" "$target_file" |
+        sed "1s/.*/$new_header/" >"$destination_file" &&
+        rm "$target_file"
 }
 
-_start_server () {
+_start_server() {
 
     local server="${1:-"/usr/local/var/postgres"}"
 
@@ -31,14 +31,14 @@ _start_server () {
     if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
         echo -e "\n${BOLD}${RED}==> Postgres server is not running, starting the server...${RESET}"
         # starts the server, deletes output
-        pg_ctl start -D "$server" > /dev/null 2>&1
+        pg_ctl start -D "$server" >/dev/null 2>&1
     else
         echo -e "\n${CYAN}${BOLD}==> Postgres server is already running.${RESET}"
     fi
 
 }
 
-_create_table () {
+_create_table() {
 
     # define parameters
     local table_name="$1"
@@ -52,13 +52,13 @@ _create_table () {
             , municipio SMALLINT 
             , anno SMALLINT
             , geometry TEXT
-        );" 
+        );"
     echo ""
 
 }
 
-_import_data_into_postgres () {
-    
+_import_data_into_postgres() {
+
     # define parameters
     local csv="$1"
     local table_name="$2"
@@ -66,8 +66,8 @@ _import_data_into_postgres () {
 
     # store the columns of the csv as an array
     local cols
-    cols="$( head -1 "$csv" )"
-    
+    cols="$(head -1 "$csv")"
+
     # copy the csv into the postgresql TABLE_NAME into the database DB_NAME
     echo "${BOLD}${CYAN}==> ${WHITE}Copying ${CYAN}${csv} ${WHITE}to ${BLUE}${table_name} ${WHITE}in ${VIOLET}${db_name}${RESET}"
     psql -d "$db_name" -c "
@@ -75,8 +75,8 @@ _import_data_into_postgres () {
         COPY ${table_name}(${cols})
         FROM '${PWD}/${csv}'
         DELIMITER ','
-        CSV HEADER;" \
-        && rm "$csv"
+        CSV HEADER;" &&
+        rm "$csv"
 
 }
 
@@ -84,8 +84,7 @@ _import_data_into_postgres () {
 # | GLOBAL VARS |
 # +-------------+
 
-
-source "formatting-colors" # for colored output
+. "formatting-colors" # for colored output
 
 _URL="https://dati.comune.milano.it/dataset/cc065002-cd21-4dcb-b84f-bba2fd9e0c86/resource/4c31029c-22c9-49f7-b145-91374feac41c/download/bikemi_stazioni.csv"
 
@@ -105,7 +104,7 @@ pushd "$_TARGET_DIR" 1>/dev/null || exit
 
 _get_bikemi_stalls_data "$_URL" "$_FILE_NAME"
 
-_process_stalls_data "$_FILE_NAME" "$_PROCESSED_FILE"  
+_process_stalls_data "$_FILE_NAME" "$_PROCESSED_FILE"
 
 _start_server "$_SERVER"
 

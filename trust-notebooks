@@ -6,8 +6,8 @@ pushd "$_EXEC_DIR" 1>/dev/null || exit
 
 echo -e "Trusting notebooks in $_EXEC_DIR\n"
 
-for NOTEBOOK in *.ipynb ; do
+for NOTEBOOK in *.ipynb; do
     jupyter trust "$NOTEBOOK"
-    done
+done
 
 popd 1>/dev/null || exit

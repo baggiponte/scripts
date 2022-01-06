@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# saves the packages of an environment to a specified directory and removes it. 
+# saves the packages of an environment to a specified directory and removes it.
 
 # this is necessary, otherwise won't find the command. see here:
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
@@ -23,7 +23,7 @@ for _ENV in "$@"; do
 
     # creates a list of the packages in the specified directory, adding a date stamp
     echo -e "\n${BOLD}Exporting packages' list in ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
-    mamba list --export > "${_CONDA_ENVS_CACHE}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
+    mamba list --export >"${_CONDA_ENVS_CACHE}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
 
     # removes the ENV: DOES NOT ASK FOR CONFIRMATION!
     echo "${BOLD}Deleting environment ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"

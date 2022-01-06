@@ -4,22 +4,22 @@
 # | Define Functions |
 # +------------------+
 
-_check_target_dirs () {
+_check_target_dirs() {
 
-  local notebook_dir="$1"
-  local conversion_dir="$2"
+    local notebook_dir="$1"
+    local conversion_dir="$2"
 
-  if [[ ! -d "$notebook_dir" ]] ; then
-      echo "${BOLD}${RED}${notebook_dir}${RESET}${BOLD} does not exist. Please insert a valid path."
-      exit
-  fi
+    if [[ ! -d "$notebook_dir" ]]; then
+        echo "${BOLD}${RED}${notebook_dir}${RESET}${BOLD} does not exist. Please insert a valid path."
+        exit 1
+    fi
 
-  # if the target directory does not exist, create it
-  [[ -d "$conversion_dir" ]] || mkdir "$conversion_dir"
+    # if the target directory does not exist, create it
+    [[ -d "$conversion_dir" ]] || mkdir "$conversion_dir"
 
 }
 
-_pair_notebooks () {
+_pair_notebooks() {
 
     local _input_file="$1"
     local _to_format="$2"
@@ -35,24 +35,24 @@ _pair_notebooks () {
 
     local _output_file="${_filename/.ipynb/.$_extension}"
 
-    if [[ ! -e "${_conversion_dir}/${_output_file}" ]] ; then
-        
+    if [[ ! -e "${_conversion_dir}/${_output_file}" ]]; then
+
         echo "${BOLD}${BLUE}==>${RESET}${BOLD} Pairing ${BLUE}${_filename}${RESET}${BOLD} to ${BLUE}${_output_file}${RESET}"
-        
+
         # pair the notebook from the execution dir to the desired format in the destination dir
         jupytext --set-formats \
-        "$(dirname "$_input_file")"///ipynb,"$_conversion_dir"///"$_to_format" \
-        "$_input_file"
-        
+            "$(dirname "$_input_file")"///ipynb,"$_conversion_dir"///"$_to_format" \
+            "$_input_file"
+
         # just add a blank line
         echo ""
     fi
 }
 
-_update_sync () {
+_update_sync() {
 
     local _input_file="$1"
-    local _to_format="${2%:*}"     # replace the trailing `:...` with nothing
+    local _to_format="${2%:*}" # replace the trailing `:...` with nothing
     local _conversion_dir="$3"
 
     # the file is always passed as notebook_dir/input_file.ipynb so we take the basename
@@ -60,53 +60,56 @@ _update_sync () {
     # ${var%pattern/replacement} replaced the first pattern from the end, i.e. trailing pattern
     local _filename
     _filename="$(basename "$_input_file")"
-    
+
     local _output_file="${_filename/.ipynb/.$_to_format}"
 
     echo -e "${BOLD}${CYAN}==>${RESET}${BOLD} Updating sync between ${CYAN}${_filename}${RESET}${BOLD} and ${CYAN}${_output_file}${RESET}"
-    
+
     jupytext --sync "$_input_file"
-    
+
     echo ""
 }
 
-main () {
+main() {
 
-  local to_format="$1"
-  local notebook_dir="$2"
-  local conversion_dir="$3"
+    local to_format="$1"
+    local notebook_dir="$2"
+    local conversion_dir="$3"
 
-  while true ; do
+    while true; do
 
-      echo -e "\n${BOLD}Pair or sync ${YELLOW}'.ipynb' notebooks${RESET}${BOLD} in ${BLUE}${_ROOT_DIR}/${notebook_dir}${RESET}${BOLD} and ${YELLOW}'${to_format}'${RESET}${BOLD} files in ${BLUE}${_ROOT_DIR}/${conversion_dir}.${RESET}"
-      read -rp "${BOLD}Do you want to ${VIOLET}pair [p]${RESET}${BOLD} notebooks or ${VIOLET}sync [s]${RESET}${BOLD} the recent updates? ${VIOLET}[p/s]${RESET} " answer
-      echo ""
+        echo -e "\n${BOLD}Pair or sync ${YELLOW}'.ipynb' notebooks${RESET}${BOLD} in ${BLUE}${_ROOT_DIR}/${notebook_dir}${RESET}${BOLD} and ${YELLOW}'${to_format}'${RESET}${BOLD} files in ${BLUE}${_ROOT_DIR}/${conversion_dir}.${RESET}"
+        read -rp "${BOLD}Do you want to ${VIOLET}pair [p]${RESET}${BOLD} notebooks or ${VIOLET}sync [s]${RESET}${BOLD} the recent updates? ${VIOLET}[p/s]${RESET} " answer
+        echo ""
 
-      case $answer in
-          [pP]* ) for ipynb in "$notebook_dir"/*.ipynb ; do
-                      _pair_notebooks "$ipynb" "$to_format" "$conversion_dir"
-                  done
+        case $answer in
+        [pP]*)
+            for ipynb in "$notebook_dir"/*.ipynb; do
+                _pair_notebooks "$ipynb" "$to_format" "$conversion_dir"
+            done
 
-                  break;;
+            break
+            ;;
 
-          [sS]* ) for ipynb in "$notebook_dir"/*.ipynb ; do
-                      _update_sync "$ipynb" "$to_format" "$conversion_dir"
-                  done
+        [sS]*)
+            for ipynb in "$notebook_dir"/*.ipynb; do
+                _update_sync "$ipynb" "$to_format" "$conversion_dir"
+            done
 
-                  break;;
+            break
+            ;;
 
-              * ) echo "Enter P or S, please.";;
-      esac
-  done
+        *) echo "Enter P or S, please." ;;
+        esac
+    done
 }
-
 
 # +----------------+
 # | Before running |
 # +----------------+
 
-source "formatting-colors" # for coloured output
-  
+. "formatting-colors" # for coloured output
+
 # +----------------+
 # | Define Globals |
 # +----------------+

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-get_data () {
+get_data() {
 
     local downloads_subdir="$1"
     local downloaded_file="$2"
@@ -14,7 +14,7 @@ get_data () {
 
 }
 
-source "formatting-colors"
+. "formatting-colors"
 
 _DOWNLOAD_DIR=${1:-"$HOME/tesi/data"}
 
