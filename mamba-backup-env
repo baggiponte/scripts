@@ -6,27 +6,40 @@
 # https://github.com/conda/conda/issues/7980#issuecomment-441358406
 . "$CONDA_ROOT/etc/profile.d/mamba.sh"
 
-. formatting-colors # for colored output
+command -v rich 1>/dev/null || {
+    echo "Install rich first, e.g. \`pipx install rich\`"
+    exit 1
+}
+
+_check_cache_dir() {
+
+    local cache_dir="$1"
+
+    if [[ ! -d "$cache_dir" ]]; then
+        echo
+        rich --print "Creating directory: [bold][green]${cache_dir}[/green]." &&
+            mkdir -p "$cache_dir"
+    else
+        echo
+        rich --print "Backup directory exists at [bold][green]${cache_dir}[/green]."
+    fi
+
+}
 
 _CONDA_ENVS_CACHE="${CACHE}/conda_envs_backups"
 
-# check if the directory where the package list exists, else make it
-if [[ ! -d "$_CONDA_ENVS_CACHE" ]]; then
-    echo -e "\nBackup directory created at \"${_CONDA_ENVS_CACHE}\"."
-    mkdir -p "${_CONDA_ENVS_CACHE}"
-else
-    echo -e "\nBackup directory already exists at \"${_CONDA_ENVS_CACHE}\"."
-fi
+_check_cache_dir "${_CONDA_ENVS_CACHE}"
 
-# $@ indicates every argument of the script
 for _ENV in "$@"; do
 
     # creates a list of the packages in the specified directory, adding a date stamp
-    echo -e "\n${BOLD}Exporting packages' list in ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
-    mamba list --export >"${_CONDA_ENVS_CACHE}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
+    echo
+    rich --print "[bold]Exporting packages' list in [blue]${_ENV}[/blue]..."
+    mamba env export -n "$_ENV" >"${_CONDA_ENVS_CACHE}/${_ENV}_backup_$(date +"%Y-%m-%d").yml"
 
     # removes the ENV: DOES NOT ASK FOR CONFIRMATION!
-    echo "${BOLD}Deleting environment ${CYAN}${_ENV}${RESET}${BOLD}...${RESET}"
-    mamba env remove --name "${_ENV}"
+    echo
+    rich --print --emoji ":warning: [bold][red]Deleting[/red] environment [blue]${_ENV}[/blue]..."
+    mamba env remove --name "$_ENV"
 
 done

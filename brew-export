@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-. formatting-colors # for colored output
+command -v rich || {
+    echo "Install rich first, e.g. \`pipx install rich\`"
+    exit 1
+}
 
 _BREW_CACHE="$HOME/.cache/brew/cache"
 
@@ -8,8 +11,6 @@ if [[ ! -d "$_BREW_CACHE" ]]; then
     mkdir -p "$_BREW_CACHE"
 fi
 
-echo -e "\n${BOLD}Exporting Homebrew formulae to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
-brew leaves -r >"${_BREW_CACHE}"/brew_formulae.txt
+rich --print "\n[bold]Exporting Homebrew formulae to [blue]$_BREW_CACHE..." && brew leaves -r >"${_BREW_CACHE}"/brew_formulae.txt
 
-echo -e "\n${BOLD}Exporting Homebrew casks to ${CYAN}${_BREW_CACHE}${RESET}${BOLD}...${RESET}"
-brew list --cask >"${_BREW_CACHE}"/brew_cask.txt
+rich --print "\n[bold]Exporting Homebrew casks to [blue]$_BREW_CACHE..." && brew list --cask >"${_BREW_CACHE}"/brew_casks.txt

@@ -1,22 +1,18 @@
 #!/usr/bin/env bash
 
-. "formatting-colors" # for colored output
+command -v rich 1>/dev/null || {
+    echo "Install rich first, e.g. \`pipx install rich\`"
+    exit 1
+}
 
-echo -e "\n${BOLD}🍺 Initialising ${BLUE}brew update${RESET}..." &&
+echo
+rich --print --emoji ":beer: [bold]Initialising [blue]brew update[/blue]..." &&
     brew update &&
-    echo -e "${BOLD}Homebrew has been updated.${RESET}\n"
+    rich --print "[bold]Homebrew has been updated."
 
-echo -e "${BOLD}🍺 Initialising ${BLUE}brew upgrade${RESET}..." &&
+echo
+rich --print --emoji ":beer: [bold]Initialising [blue]brew upgrade[/blue]..." &&
     brew upgrade &&
-    echo -e "${BOLD}Homebrew has been upgraded.${RESET}\n"
+    rich --print "[bold]Homebrew has been upgraded."
 
-# moved to brew-cleanup and brew-export
-# echo -e "${BOLD}🍺 Homebrew cleaning up...${RESET} 🧼" \
-#     && brew cleanup -s \
-#     && echo -e "${BOLD}Homebrew is cleaned up!${RESET} ✨ \n"
-#
-# echo -e "${BOLD}🗂  Backing up Formulae and Casks...${RESET}" \
-#     && "$MYBINS"/brew_export &>/dev/null \
-#     && echo -e "${BOLD}Homebrew is backed up!${RESET}\n"
-
-echo -e "${BOLD}🍻 Homebrew is up to date: cheers! ${RESET}🍻 "
+rich --print --emoji ":beers: [bold]Homebrew is up to date: cheers!"

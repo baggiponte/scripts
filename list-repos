@@ -1,0 +1,23 @@
+#! /usr/bin/env bash
+
+# Lists the repositories in the target directory
+
+_get_repos() {
+
+    local target_dir="$1"
+
+    local repos
+    repos=$(fd --type=d --hidden --regex "^\.git$" "$target_dir" --exec dirname | tr "\n" ";")
+
+    local repos_arr
+    IFS=";" read -ra repos_arr <<< "$repos"
+    repos_arr+=("$HOME/.local/scripts" "$HOME/.config")
+
+    echo "${repos_arr[@]}"
+
+    exit 0
+}
+
+_TARGET_DIR="${1:-"$HOME/Documents/dev/"}"
+
+_get_repos "$_TARGET_DIR"

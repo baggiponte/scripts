@@ -23,8 +23,3 @@ repos:
     hooks:
     -   id: black
         name: black (scripts)
--   repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.8.0
-    hooks:
-    -   id: shellcheck
-#       args: ["--severity=warning"]  # Optionally only show errors and warnings

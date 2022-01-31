@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-. formatting-colors # for colored output
+command -v rich 1>/dev/null || {
+    echo "Install rich first, e.g. \`pipx install rich\`"
+    exit 1
+}
 
-echo -e "\n${BOLD}Removing unused formulae...${RESET}"
-brew leaves -p | xargs -L 1 brew uninstall
+rich --print "[bold]Removing unused formulae..." && brew leaves -p | xargs -L 1 brew uninstall
 
-echo -e "\n${BOLD}Remove lockfiles and outdated downloads...${RESET}"
-brew cleanup -s
+rich --print "[bold]Removing lockfiles and outdated downloads..." && brew cleanup -s
