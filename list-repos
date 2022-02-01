@@ -7,7 +7,7 @@ _get_repos() {
     local target_dir="$1"
 
     local repos
-    repos=$(fd --type=d --hidden --regex "^\.git$" "$target_dir" --exec dirname | tr "\n" ";")
+    repos=$(fd --type=d --hidden --regex "^\.git$" "$target_dir" --exec dirname | sort | tr "\n" ";")
 
     local repos_arr
     IFS=";" read -ra repos_arr <<< "$repos"

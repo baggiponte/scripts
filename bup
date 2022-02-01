@@ -5,14 +5,15 @@ command -v rich 1>/dev/null || {
     exit 1
 }
 
-echo
-rich --print --emoji ":beer: [bold]Initialising [blue]brew update[/blue]..." &&
+echo &&
+    rich --print --emoji ":beer: [bold]Initialising [blue]brew update[/blue]..." &&
     brew update &&
     rich --print "[bold]Homebrew has been updated."
 
-echo
-rich --print --emoji ":beer: [bold]Initialising [blue]brew upgrade[/blue]..." &&
+echo &&
+    rich --print --emoji ":beer: [bold]Initialising [blue]brew upgrade[/blue]..." &&
     brew upgrade &&
     rich --print "[bold]Homebrew has been upgraded."
 
-rich --print --emoji ":beers: [bold]Homebrew is up to date: cheers!"
+echo &&
+    rich --print --emoji ":beers: [bold]Homebrew is up to date: cheers!"

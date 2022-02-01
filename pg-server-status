@@ -5,12 +5,14 @@ command -v rich || {
     exit 1
 }
 
+_SERVER=${1:-"/usr/local/var/postgres"}
+
 #checks if the server is running
 if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
     echo &&
-        rich --print "[bold][red]==>[/red] Postgres server is not running, starting the server..." &&
-        pg_ctl start -D /usr/local/var/postgres >/dev/null 2>&1
+        rich --print "[bold][red]==>[/red] Starting server at ${_SERVER}..." &&
+        pg_ctl start -D "$_SERVER" >/dev/null 2>&1
 else
     echo &&
-        rich --print "[bold][cyan]==>[/cyan] Postgres server is already running."
+        rich --print "[bold][cyan]==>[/cyan] Server is already running."
 fi

@@ -31,7 +31,7 @@ _start_server() {
     if [[ "$(pg_ctl status)" == "pg_ctl: no server running" ]]; then
         echo &&
             rich --print "[bold][red]==>[/red] Postgres server is not running, starting the server..." &&
-            pg_ctl start -D /usr/local/var/postgres >/dev/null 2>&1
+            pg_ctl start -D "$server" >/dev/null 2>&1
     else
         echo &&
             rich --print "[bold][cyan]==>[/cyan] Postgres server is already running."
