@@ -14,7 +14,7 @@ update_envs() {
     for env in "${conda_envs[@]}"; do
 
         rich --print "[bold][cyan]==>[/cyan] Checking for packages to update in [cyan]${env}[/cyan]..." &&
-            mamba update --all -n "$env" -y -c conda-forge &&
+            mamba update --all -n "$env" -y --no-banner -c conda-forge &&
             rich --print "[bold]Packages in [cyan]${env}[/cyan] are up to date." &&
             echo
 
@@ -25,7 +25,7 @@ clean_all() {
 
     echo &&
         rich --print "[bold]Environments have been updated. Cleaning the tarballs..." &&
-        mamba clean --all -y &&
+        mamba clean --all -y --no-banner &&
         rich --print "[bold]Tarballs have been cleaned."
 
 }
