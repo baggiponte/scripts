@@ -23,10 +23,9 @@ update_envs() {
 
 clean_all() {
 
-    echo &&
-        rich --print "[bold]Environments have been updated. Cleaning the tarballs..." &&
-        mamba clean --all -y --no-banner &&
-        rich --print "[bold]Tarballs have been cleaned."
+    rich --print "[bold]Environments have been updated. Cleaning the tarballs..." &&
+    mamba clean --all -y --no-banner &&
+    rich --print "[bold]Tarballs have been cleaned."
 
 }
 
