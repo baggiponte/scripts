@@ -1,0 +1,18 @@
+#! /usr/bin/env zsh
+
+command -v julia 1>/dev/null || {
+        rich "[bold red] julia binary not found. please install julia![/bold red]"
+    }
+
+
+julia_pluto(){
+    
+    local project_dir="$1"
+
+    julia --project="$project_dir" -e "using Pluto; Pluto.run()"
+
+    }
+
+_PROJECT_DIR="${1:-"."}"
+
+julia_pluto _PROJECT_DIR
