@@ -32,8 +32,20 @@ clean_all() {
 # this is necessary, otherwise won't find the command.
 # both conda.sh and mamba.sh need to be sourced
 # https://github.com/conda/conda/issues/7980#issuecomment-96682413
-. "$CONDA_ROOT/etc/profile.d/conda.sh"
-. "$CONDA_ROOT/etc/profile.d/mamba.sh"
+
+if command -v conda > /dev/null; then
+    . "$CONDA_ROOT/etc/profile.d/conda.sh"
+else
+    echo "conda executable not found. Please install conda and retry."
+    exit
+fi
+
+if command -v mamba > /dev/null; then
+    . "$CONDA_ROOT/etc/profile.d/mamba.sh"
+else
+    echo "mamba executable not found. Please install mamba and retry."
+    exit
+fi
 
 command -v rich 1>/dev/null || {
     echo "Install rich first, e.g. \`pipx install rich\`"

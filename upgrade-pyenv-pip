@@ -1,0 +1,33 @@
+#! /usr/bin/env zsh 
+
+command -v pyenv > /dev/null && eval "$(pyenv init --path)" && eval "$(pyenv init -)"
+command -v pyenv-virtualenv > /dev/null && eval "$(pyenv virtualenv-init -)"
+
+command -v rich > /dev/null || {
+    echo "rich not installed, please install rich-cli"
+    exit
+}
+
+
+if [[ "$#" -eq 0 ]]; then
+    # pyenv versions --bare will look like this: 
+    #
+    # 3.10.2
+    # 3.8.12
+    # 3.9.9
+    # 3.9.9/envs/py3nvim
+    # py3nvim
+    #
+    # so we filter out the redundant line by invert-matching rows
+    # containing '/envs/'
+    IFS=$'\n' _PYENVS_VERSIONS=($(pyenv versions --bare | grep -E --invert-match '/envs/'))
+else
+    _PYENVS_VERSIONS=("$@")
+fi
+
+
+for version in "${_PYENVS_VERSIONS[@]}"; do
+    rich --print "[bold]Upgrading [cyan]${version}[/]"
+    pyenv shell "$version" && pip install --upgrade pip ;
+done
+
