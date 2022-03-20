@@ -31,3 +31,5 @@ for version in "${_PYENVS_VERSIONS[@]}"; do
     pyenv shell "$version" && pip install --upgrade pip ;
 done
 
+# go back to default pyenv python 
+pyenv shell --unset
