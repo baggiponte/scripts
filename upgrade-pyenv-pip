@@ -28,7 +28,7 @@ fi
 
 for version in "${_PYENVS_VERSIONS[@]}"; do
     rich --print "[bold]Upgrading [cyan]${version}[/]"
-    pyenv shell "$version" && pip install --upgrade pip ;
+    pyenv shell "$version" && pip install --upgrade pip setuptools;
 done
 
 # go back to default pyenv python 

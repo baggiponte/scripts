@@ -13,6 +13,11 @@ command -v jq >/dev/null 2>&1 || {
     exit 1
 }
 
-for _WORKSPACE in "$JUPYTER_CONFIG_DIR"/lab/workspaces/*; do
-    jq -r ".metadata.id" "$_WORKSPACE"
-done
+if [ -d "$JUPYTER_CONFIG_DIR/lab/workspaces" ]; then
+    for workspace in "$JUPYTER_CONFIG_DIR"/lab/workspaces/*; do
+        jq -r ".metadata.id" "$workspace"
+    done
+else
+    echo "$JUPYTER_CONFIG_DIR/lab/workspaces does not exist."
+    exit 1
+fi
