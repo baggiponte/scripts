@@ -1,0 +1,6 @@
+if command -v pyenv > /dev/null; then
+    echo "$(pyenv prefix)"/bin/python 
+else
+    echo "pyenv not installed"
+    exit
+fi
