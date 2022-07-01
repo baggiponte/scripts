@@ -1,4 +1,4 @@
-#! /usr/bin/env zsh 
+#! /usr/bin/env zsh
 
 command -v pyenv > /dev/null && eval "$(pyenv init --path)" && eval "$(pyenv init -)"
 command -v pyenv-virtualenv > /dev/null && eval "$(pyenv virtualenv-init -)"
@@ -10,7 +10,7 @@ command -v rich > /dev/null || {
 
 
 if [[ "$#" -eq 0 ]]; then
-    # pyenv versions --bare will look like this: 
+    # pyenv versions --bare will look like this:
     #
     # 3.10.2
     # 3.8.12
@@ -31,5 +31,5 @@ for version in "${_PYENVS_VERSIONS[@]}"; do
     pyenv shell "$version" && pip install --upgrade pip setuptools;
 done
 
-# go back to default pyenv python 
+# go back to default pyenv python
 pyenv shell --unset
