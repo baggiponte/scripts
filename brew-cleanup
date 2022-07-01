@@ -1,10 +1,22 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 command -v rich 1>/dev/null || {
     echo "Install rich first, e.g. \`pipx install rich\`"
     exit 1
 }
 
+if [[ ! -v HOMEBREW_BUNDLE_FILE ]]; then
+    echo "HOMEBREW_BUNDLE_FILE is not defined: exiting script"
+    exit 1
+fi
+
 rich --print "[bold]Removing unused formulae..." && brew leaves -p | xargs -L 1 brew uninstall
 
 rich --print "[bold]Removing lockfiles and outdated downloads..." && brew cleanup -s
+
+rich --print "[bold]Dumping formulae and casks to Brewfile..."
+
+pushd "$(dirname $HOMEBREW_BUNDLE_FILE)"
+mv Brewfile Brewfile.bak
+brew bundle dump --describe --no-upgrade
+popd
