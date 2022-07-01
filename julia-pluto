@@ -6,7 +6,7 @@ command -v julia 1>/dev/null || {
 
 
 julia_pluto(){
-    
+
     local project_dir="$1"
 
     julia --project="$project_dir" -e "using Pluto; Pluto.run()"

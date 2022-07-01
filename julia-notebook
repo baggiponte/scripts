@@ -6,10 +6,10 @@ command -v julia 1>/dev/null || {
 
 
 julia_notebook(){
-    
+
     local project_dir="$1"
 
-    julia --project="$project_dir" -e "using IJulia; notebook(dir=\"$1\")"
+    julia --project="$project_dir" -e "using IJulia; notebook(dir=\"$project_dir\")"
 
     }
 
