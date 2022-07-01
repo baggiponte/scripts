@@ -1,7 +1,7 @@
 #! /usr/bin/env zsh
 
 create_index(){
-    
+
     local folder="$1"
     local extension="$2"
     local destination_file="index-${folder}.csv"
@@ -10,7 +10,7 @@ create_index(){
 
     fd . --extension="$extension" "$folder" \
         | sed 's/\(.*\)\/\(.*\)/\2/' >> "$destination_file"
-    
+
     }
 
 create_index "$1" "$2"
