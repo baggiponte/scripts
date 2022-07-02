@@ -14,6 +14,8 @@ rich --print "[bold]Removing unused formulae..." && brew leaves -p | xargs -L 1 
 
 rich --print "[bold]Removing lockfiles and outdated downloads..." && brew cleanup -s
 
+rich --print "[bold]Removing downloads in ~/Library/Caches/Homebrew/downloads..." && rm -r ~/Library/Caches/Homebrew/downloads/*
+
 rich --print "[bold]Dumping formulae and casks to Brewfile..."
 
 pushd "$(dirname $HOMEBREW_BUNDLE_FILE)"
