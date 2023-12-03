@@ -1,0 +1,18 @@
+#! /usr/bin/env zsh
+
+nd() {
+    requires nvim
+
+    local filemanager_cmd="${NVIM_FILEMANAGER_CMD:-"NvimTreeToggle"}"
+
+    if [[ -z "$1" ]]; then
+        nvim -c "${filemanager_cmd}"
+    elif [[ -d "$1" ]]; then
+        nvim -c "${filemanager_cmd} $1"
+    else
+        print "'{$1}' is not a directory"
+        return 1
+    fi
+}
+
+nd "$1"
