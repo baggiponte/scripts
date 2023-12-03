@@ -1,0 +1,32 @@
+#! /usr/bin/env zsh
+
+zellij-switcher() {
+    if [[ -v ZELLIJ ]]; then
+        print "You are inside a zellij session. Currently zellij API does not allow switching sessions."
+        print "You can use the session-switcher plugin, or exit the session and run this command again."
+        return 1
+    fi
+
+    requires zellij sk
+
+    local sessions
+    sessions=($(zellij list-sessions --no-formatting --short))
+
+    if [[ "${#sessions}" -eq 0 ]]; then
+        print "No zellij sessions found."
+        return 0
+    fi
+
+    local session
+    session="$(sk --ansi --cmd="zellij list-sessions --short")"
+
+    if [[ -z "$session" ]]; then
+        return 1
+    fi
+
+    zellij attach "$session"
+
+    return 0
+}
+
+zellij-switcher
