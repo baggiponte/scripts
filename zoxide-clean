@@ -1,0 +1,9 @@
+#! /usr/bin/env zsh
+
+zoxide-clean() {
+    requires zoxide sk
+
+    zoxide remove $(zoxide query --list | sk -m)
+}
+
+zoxide-clean
