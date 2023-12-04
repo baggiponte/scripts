@@ -3,13 +3,13 @@
 teal() {
 	requires tldr sk
 
-    local pattern="$1"
+    local pattern="$@"
 
     sk \
         --cmd="tldr --list" \
         --preview "tldr {1} --color=always" --preview-window=right,70% \
-        --query="$pattern"
+        --query="$pattern" \
         | xargs tldr
 }
 
-teal "$1"
+teal "$@"
