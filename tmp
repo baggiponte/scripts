@@ -1,0 +1,11 @@
+#! /usr/bin/env zsh
+
+tmp() {
+  local dir="$1"
+  local dest="/tmp/${dir}"
+  mkdir -p "${dest}"
+
+    cd "${dest}" || return 1
+}
+
+tmp "$1"
