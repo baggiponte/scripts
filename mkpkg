@@ -1,0 +1,5 @@
+#! /usr/bin/env zsh
+
+mkpkg () { command mkdir -p "$1" ; touch "$1/__init__.py" ; }
+
+mkpkg "$1"
