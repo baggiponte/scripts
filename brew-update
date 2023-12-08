@@ -1,0 +1,11 @@
+#! /usr/bin/env zsh
+
+brew-update () {
+    requires brew
+
+    print -- "\n🍺 $fg_bold[white]Check out new bottles and casks from the brew!$reset_color 🍺"
+
+    brew update && brew upgrade
+}
+
+brew-update()
