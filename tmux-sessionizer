@@ -33,28 +33,21 @@ tmux-sessionizer() {
         --cmd="zoxide query --list"
     )
 
-    local dir
-    local dirname
+    local dir dirname
+
     dir="$(sk "${sk_args[@]}")"
     dirname="$(basename "${dir/./}")"
 
-    if [[ -z "$dir" ]]; then
-        return 1
+    if ! tmux has-session -t "$dirname" 2>/dev/null ; then
+        tmux new-session -d -s "$dirname" -c "$dir"
     fi
 
-    local tmux_running
-    tmux_running=$(pgrep tmux)
-
-    if [[ -z $TMUX ]] && [[ -z $TMUX_RUNNING ]]; then
-        tmux new-session -s "$dirname" -c "cd $dir"
-        exit 0
+    if [[ ! -z "$TMUX" ]]; then
+        tmux switch-client -t "$dirname"
     fi
 
-    if ! tmux has-session -t=$dirname 2> /dev/null; then
-        tmux new-session -ds $dirname -c $dir
-    fi
-
-    tmux switch-client -t $dirname
+    tmux attach -t "$dirname"
 }
+
 
 tmux-sessionizer
