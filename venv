@@ -1,6 +1,7 @@
 #! /usr/bin/env zsh
 
 venv () {
+    print "Creating virtualenv '.venv' named '"$(basename $(pwd))"' in "$(pwd)""
     python -m venv --upgrade-deps --prompt="$(basename $(pwd))" -- .venv ; source .venv/bin/activate
 }
 
