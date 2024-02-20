@@ -1,0 +1,7 @@
+#! /usr/bin/env zsh
+
+venv () {
+    python -m venv --upgrade-deps --prompt="$(basename $(pwd))" -- .venv ; source .venv/bin/activate
+}
+
+venv
