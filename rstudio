@@ -1,0 +1,39 @@
+#! /usr/bin/env zsh
+
+rstudio() {
+    # Check if RStudio is available
+    if [ ! -x /Applications/RStudio.app ]; then
+        echo "RStudio could not be found at /Applications/RStudio.app."
+        return 1
+    fi
+
+    # Check if directory is provided as argument
+    local dir=${1:-.};
+
+    # Check if there is an .Rproj file
+    local files=( "$dir"/*.Rproj(N) )
+
+    # If there is exactly one .Rproj file
+    if [ $(($#files)) -eq 1 ]; then
+        echo "Opening $(basename "${files[1]}") in RStudio"
+        open -a RStudio "${files[1]}"
+    # If there is more than one .Rproj file
+    elif [ $(($#files)) -gt 1 ]; then
+        PS3="Select the project to open: "
+        select file in "${files[@]}"; do
+            if [ -n "$file" ]; then
+                echo "Opening $(basename "$file") in RStudio"
+                open -a RStudio "$file"
+                break
+            else
+                echo "Invalid selection."
+            fi
+        done
+    # If there are no .Rproj files
+    else
+        echo "No .Rproj file found, just launching RStudio"
+        open -a RStudio
+    fi
+}
+
+rstudio
