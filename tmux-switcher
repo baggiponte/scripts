@@ -1,0 +1,18 @@
+#! /usr/bin/env zsh
+
+tmux-switcher () {
+    local args=(
+        --ansi
+        --height=40%
+    )
+
+    local session="$(tmux list-sessions | cut -d ":" -f 1 | fzf)"
+
+    if [[ ! -z "$TMUX" ]]; then
+        tmux switch-client -t "$session"
+    fi
+
+    tmux attach -t "$session"
+}
+
+tmux-switcher
