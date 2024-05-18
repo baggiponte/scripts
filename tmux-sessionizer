@@ -1,45 +1,11 @@
 #! /usr/bin/env zsh
 
 tmux-sessionizer() {
-    requires zoxide sk tmux
-
-    local ignores=(
-        "*.egg-info"
-        ".DS_Store"
-        ".Rproj.user"
-        ".git/"
-        ".idea/"
-        ".ipynb_checkpoints/"
-        ".jj/"
-        ".mypy_cache/"
-        ".pytest_cache/"
-        ".ruff_cache/"
-        ".terraform"
-        ".venv/"
-        ".vscode/"
-        ".coverage"
-        ".coverage.xml"
-        "__pycache__/"
-        "assets/"
-        "debug/"
-        "htmlcov/"
-        "node_modules/"
-        "renv/"
-        "target/"
-        "venv/"
-    )
-
-    local sk_args=(
-        --ansi
-        --height=40%
-        --preview="eza --color --all --group-directories-first --icons --level=2 --tree --ignore-glob='${(j:|:)ignores}' -- {}"
-        --preview-window=down,40%
-        --cmd="zoxide query --list"
-    )
+    requires zoxide tmux
 
     local dir dirname
 
-    dir="$(sk "${sk_args[@]}")"
+    dir="$(zoxide query --interactive)"
     dirname="$(basename "${dir/./}")"
 
     if ! tmux has-session -t "$dirname" 2>/dev/null ; then
