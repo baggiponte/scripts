@@ -10,7 +10,7 @@ tmux-switcher () {
     if [[ ! -z "$TMUX" ]]; then
         tmux switch-client -t "$session"
     else
-        tmux attach -s "$session"
+        tmux attach -t "$session"
     fi
 }
 
