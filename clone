@@ -1,9 +1,0 @@
-#! /usr/bin/env zsh
-
-clone() {
-  local repo=$1
-
-  git clone "$repo" ; cd "$(basename $repo)"
-}
-
-clone $1
