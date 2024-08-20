@@ -1,0 +1,7 @@
+#! /usr/bin/env zsh
+
+curlb() {
+  curl -s -o /dev/null -w "%{time_starttransfer}\n" "$@"
+}
+
+curlb "$@"
