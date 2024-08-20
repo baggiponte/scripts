@@ -1,6 +1,19 @@
 #! /usr/bin/env zsh
 
 curlb() {
+  if [[ "$#" -eq 0 || "$1" == "--help" ]]; then
+    cat <<EOF
+Usage: curlb URL
+
+Time the start of transfer for a cURL request.
+
+Examples:
+  curlb -- "https://httpbin.org/get"
+  repeat 3 curlb -- "https://httpbin.org/get"
+EOF
+    return 0
+  fi
+
   curl -s -o /dev/null -w "%{time_starttransfer}\n" "$@"
 }
 
