@@ -3,7 +3,7 @@
 nd() {
     requires nvim
 
-    local filemanager_cmd="${NVIM_FILEMANAGER_CMD:-"Neotree toggle"}"
+    local filemanager_cmd="${NVIM_OPEN_CMD:-"Neotree toggle"}"
 
     if [[ -z "$1" ]]; then
         nvim -c "${filemanager_cmd}"
