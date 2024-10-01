@@ -1,6 +1,12 @@
 #! /usr/bin/env zsh
 
 decode_jwt() {
+
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "jq is required to decode JWT"
+        return 1
+    fi
+
     if [[ -z "$1" ]]; then
         echo "No JWT provided"
         return 1
