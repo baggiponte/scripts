@@ -1,0 +1,12 @@
+#! /usr/bin/env zsh
+
+decode_jwt() {
+    if [[ -z "$1" ]]; then
+        echo "No JWT provided"
+        return 1
+    else
+        jq --raw-input 'split(".") | .[1] | @base64d | fromjson' <<< "$1"
+    fi
+}
+
+decode_jwt "$1"
