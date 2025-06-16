@@ -20,6 +20,7 @@ main() {
         --bind="start:$RELOAD" \
         --bind="change:$RELOAD" \
         --bind="enter:become:$OPENER" \
+        --bind="ctrl-q:select-all+become:$OPENER" \
         --bind="ctrl-a:select-all,ctrl-d:deselect-all,ctrl-/:toggle-preview" \
         --delimiter=":" \
         --preview="bat --style=numbers --color=always --highlight-line={2} -- {1}" \
