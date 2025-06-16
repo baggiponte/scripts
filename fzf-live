@@ -17,8 +17,7 @@ main() {
         --multi \
         --disabled \
         --ansi \
-        --bind="start:$RELOAD" \
-        --bind="change:$RELOAD" \
+        --bind="start,change:$RELOAD" \
         --bind="enter:become:$OPENER" \
         --bind="ctrl-q:select-all+become:$OPENER" \
         --bind="ctrl-a:select-all,ctrl-d:deselect-all,ctrl-/:toggle-preview" \
