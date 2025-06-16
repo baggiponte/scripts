@@ -2,13 +2,13 @@
 
 main() {
     fd --hidden --exclude=.git --type=file -- $* | \
-        fzf \
-            --ansi \
-            --bind="enter:become:nvim -- {}" \
-            --bind="ctrl-/:toggle-preview" \
-            --preview="bat --style=numbers --color=always -- {}" \
-            --preview-window="<80(up)" \
-            --query="$*"
+    fzf \
+        --ansi \
+        --bind="enter:become:nvim -- {}" \
+        --bind="ctrl-/:toggle-preview" \
+        --preview="bat --style=numbers --color=always -- {}" \
+        --preview-window="<80(up)" \
+        --query="${*:-}"
 }
 
-main "$*"
+main "${*:-}"
