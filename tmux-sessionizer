@@ -5,7 +5,7 @@ tmux-sessionizer() {
 
     local dir dirname
 
-    dir="$(zoxide query --interactive)"
+    dir="$(fzf-zoxide)"
     dirname="$(basename "${dir/./}")"
 
     if ! tmux has-session -t "$dirname" 2>/dev/null ; then
