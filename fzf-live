@@ -1,7 +1,5 @@
 #!/usr/bin/env zsh
 #
-# fzf-files
-#
 # reference: https://junegunn.github.io/fzf/tips/ripgrep-integration/
 
 main() {
@@ -25,8 +23,8 @@ main() {
         --bind="ctrl-a:select-all,ctrl-d:deselect-all,ctrl-/:toggle-preview" \
         --delimiter=":" \
         --preview="bat --style=numbers --color=always --highlight-line={2} -- {1}" \
-        --preview-window="+{2}/2,<80(up)" # if narrower than 80 columns, preview pane is above matches
+        --preview-window="+{2}/2,<80(up)" \
         --query="$*"
 }
 
-main "$@"
+main "$*"
