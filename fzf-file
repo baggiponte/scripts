@@ -4,6 +4,7 @@ main() {
     fd --hidden --exclude=.git --type=file -- $* | \
     fzf \
         --ansi \
+        --tmux=90% \
         --bind="enter:become:nvim -- {}" \
         --bind="ctrl-/:toggle-preview" \
         --preview="bat --style=numbers --color=always -- {}" \
