@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 
 main() {
+    requires fd fzf bat nvim
+
     fd --hidden --exclude=.git --type=file -- $* | \
     fzf \
         --ansi \

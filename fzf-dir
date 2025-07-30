@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 
 main() {
+    requires fd fzf eza nvim
+
     local directories="$(fd --type=directory)"
 
     if [[ -z $directories ]]; then

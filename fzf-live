@@ -3,6 +3,8 @@
 # reference: https://junegunn.github.io/fzf/tips/ripgrep-integration/
 
 main() {
+    requires rg fzf bat nvim
+
     # {q} = query
     RELOAD='reload:rg --column --color=always --smart-case -- {q} || :'
     OPENER='
