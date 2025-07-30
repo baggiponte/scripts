@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+main() {
+    local directories="$(fd --type=directory)"
+
+    if [[ -z $directories ]]; then
+        echo "No directories found, exiting..."
+        return 1
+    fi
+
+    fd --type=directory | \
+        fzf \
+            --tmux=90% \
+            --bind="enter:become:nvim -c 'Oil {}'" \
+            --bind="ctrl-/:toggle-preview" \
+            --preview="eza --tree --color=always -- {}" \
+            --preview-window="down" \
+            --query="${*:-}"
+}
+
+main "${*:-}"
