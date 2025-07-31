@@ -3,21 +3,23 @@
 main() {
     requires fd fzf eza nvim
 
-    local directories="$(fd --type=directory)"
+    local FLAGS=(--hidden --no-ignore-vcs --type=directory)
+
+    local directories="$(fd "${FLAGS[@]}")"
 
     if [[ -z $directories ]]; then
         echo "No directories found, exiting..."
         return 1
     fi
 
-    fd --type=directory | \
-        fzf \
-            --tmux=90% \
-            --bind="enter:become:nvim -c 'Oil {}'" \
-            --bind="ctrl-/:toggle-preview" \
-            --preview="eza --tree --color=always -- {}" \
-            --preview-window="down" \
-            --query="${*:-}"
+    fd "${FLAGS[@]}" | \
+    fzf \
+        --tmux=90% \
+        --bind="enter:become:nvim -c 'Oil {}'" \
+        --bind="ctrl-/:toggle-preview" \
+        --preview="eza --tree --color=always -- {}" \
+        --preview-window="down" \
+        --query="${*:-}"
 }
 
 main "${*:-}"

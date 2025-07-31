@@ -3,7 +3,15 @@
 main() {
     requires fd fzf bat nvim
 
-    fd --hidden --exclude=.git --type=file -- $* | \
+    local FLAGS=(--hidden --no-ignore-vcs --type=file)
+    local files="$(fd "${FLAGS[@]}")"
+
+    if [[ -z $files ]]; then
+        echo "No files found, exiting..."
+        return 1
+    fi
+
+    fd "${FLAGS[@]}" | \
     fzf \
         --ansi \
         --tmux=90% \
