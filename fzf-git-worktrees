@@ -1,0 +1,67 @@
+#!/usr/bin/env zsh
+
+find_git_root() {
+    local dir=$1 git_dir current
+
+    if git_dir=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null); then
+        print -r -- "$git_dir"
+        return 0
+    fi
+
+    if git_dir=$(git -C "$dir" rev-parse --path-format=absolute --git-dir 2>/dev/null); then
+        print -r -- "$git_dir"
+        return 0
+    fi
+
+    current=$dir
+    for _ in {0..5}; do
+        if [[ -d "$current/.git" || -f "$current/.git" ]]; then
+            print -r -- "$current"
+            return 0
+        fi
+
+        [[ $current == "/" ]] && break
+        current=${current:h}
+    done
+
+    return 1
+}
+
+select_worktree() {
+    local git_root=$1 selection
+
+    if ! selection=$(git -C "$git_root" worktree list --porcelain 2>/dev/null \
+        | awk '/^worktree /{sub(/^worktree /, ""); print}' \
+        | fzf --tmux=90% --prompt='worktree> '); then
+        return $?
+    fi
+
+    selection=${selection%%$'\n'*}
+
+    [[ -n $selection ]] || return 0
+
+    print -r -- "$selection"
+}
+
+main() {
+    local start_dir=${1:-$PWD} git_root selection exit_code
+
+    requires git fzf awk
+
+    if ! git_root=$(find_git_root "$start_dir"); then
+        print -u2 "Not inside a git worktree (searched up to 5 levels)."
+        return 1
+    fi
+
+    selection=$(select_worktree "$git_root")
+    exit_code=$?
+
+    (( exit_code == 130 )) && return 0
+    (( exit_code != 0 )) && return $exit_code
+
+    [[ -n $selection ]] || return 0
+
+    print -r -- "$selection"
+}
+
+main "$@"
