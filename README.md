@@ -6,7 +6,7 @@ Scripts that grew out of my [dotfiles](https://github.com/baggiponte/dotfiles).
 
 ### Update the `.gitignore`
 
-Run this with `fd`
+Run `./update-gitignore.sh` to update the `.gitignore` file. The script runs this one-liner:
 
 ```bash
 fd --type=symlink --no-ignore > .gitignore
