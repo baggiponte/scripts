@@ -99,7 +99,7 @@ run_files_dirs() {
         --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
         --bind="ctrl-g:become:${self} --mode live -- {q}" \
         --bind="${start_bind}" \
-        --preview="bat --style=numbers --color=always -- {}" \
+        --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
         --preview-window="<80(up)" \
         --query="${query}")"
     if (( $? != 0 )); then
