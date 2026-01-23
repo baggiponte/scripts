@@ -18,8 +18,8 @@ main() {
     local dir_cmd_str="${(j: :)DIR_CMD}"
     local query="${*:-}"
 
-    local -a selection
-    selection=("${(@f)$("${FILE_CMD[@]}" | fzf \
+    local selection_output
+    selection_output="$("${FILE_CMD[@]}" | fzf \
         --ansi \
         --multi \
         --tmux=90% \
@@ -32,9 +32,15 @@ main() {
         --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
         --preview="bat --style=numbers --color=always -- {}" \
         --preview-window="<80(up)" \
-        --query="${query}")}")
+        --query="${query}")"
+    if (( $? != 0 )); then
+        return 0
+    fi
 
-    if (( ${#selection[@]} == 0 )); then
+    local -a selection
+    selection=("${(@f)selection_output}")
+
+    if (( ${#selection[@]} == 0 )) || [[ -z ${selection[1]} ]]; then
         return 0
     fi
     if [[ -d $selection[1] ]]; then
