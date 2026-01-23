@@ -1,7 +1,47 @@
 #!/usr/bin/env zsh
 
+show_help() {
+    cat <<'EOF'
+fzf-file: fuzzy find files/dirs or live ripgrep results, then open in nvim
+
+Usage:
+  fzf-file [--mode <files|directory|live>] [--] [query...]
+  fzf-file --mode=files query...
+  fzf-file --mode=directory query...
+  fzf-file --mode=live query...
+
+Modes:
+  files       Browse files (default)
+  directory   Browse directories
+  live        Live ripgrep search
+
+Notes:
+  - Any remaining arguments are treated as the initial fzf query.
+  - In files/dirs mode, ctrl-g switches to live mode with the current query.
+  - Selections open in Neovim (files in splits, dir opens with Oil).
+
+Dependencies:
+  fd, fzf, bat, nvim, rg, eza
+
+Examples:
+  fzf-file
+  fzf-file react
+  fzf-file --mode directory src
+  fzf-file --mode live "TODO|FIXME"
+EOF
+}
+
 main() {
-    requires fd fzf bat nvim rg
+    for arg in "$@"; do
+        case "$arg" in
+            -h|--help)
+                show_help
+                return 0
+                ;;
+        esac
+    done
+
+    requires fd fzf bat nvim rg eza
     local script_path="${${(%):-%x}:A}"
     if [[ -z $script_path ]]; then
         script_path="${0:A}"
