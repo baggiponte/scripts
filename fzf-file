@@ -1,13 +1,69 @@
 #!/usr/bin/env zsh
 
 main() {
-    requires fd fzf bat eza nvim
+    requires fd fzf bat nvim rg
+    local script_path="${${(%):-%x}:A}"
+    if [[ -z $script_path ]]; then
+        script_path="${0:A}"
+    fi
+    typeset -g SCRIPT_SELF="$script_path"
+
+    local mode="files"
+    local -a query_parts
+
+    while (( $# > 0 )); do
+        case "$1" in
+            --mode)
+                shift
+                mode="${1:-}"
+                shift
+                ;;
+            --mode=*)
+                mode="${1#--mode=}"
+                shift
+                ;;
+            --)
+                shift
+                query_parts+=("$@")
+                break
+                ;;
+            *)
+                query_parts+=("$1")
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z $mode ]]; then
+        mode="files"
+    fi
+
+    case "$mode" in
+        files|file|f)
+            run_files_dirs "files" "${(j: :)query_parts}"
+            ;;
+        directory|dir|d|dirs)
+            run_files_dirs "directory" "${(j: :)query_parts}"
+            ;;
+        live|l)
+            run_live "${(j: :)query_parts}"
+            ;;
+        *)
+            echo "Unknown --mode: $mode (expected files, directory, or live)"
+            return 1
+            ;;
+    esac
+}
+
+run_files_dirs() {
+    local start_mode="$1"
+    local query="$2"
 
     local -a FILE_CMD=(fd --hidden --no-ignore-vcs --type file)
     local -a DIR_CMD=(fd --hidden --no-ignore-vcs --type directory)
 
-    local files="$("${FILE_CMD[@]}")"
-    local directories="$("${DIR_CMD[@]}")"
+    local files="$(${FILE_CMD[@]})"
+    local directories="$(${DIR_CMD[@]})"
 
     if [[ -z $files && -z $directories ]]; then
         echo "No files or directories found, exiting..."
@@ -16,20 +72,33 @@ main() {
 
     local file_cmd_str="${(j: :)FILE_CMD}"
     local dir_cmd_str="${(j: :)DIR_CMD}"
-    local query="${*:-}"
+    local self="${SCRIPT_SELF:-${0:A}}"
+
+    local prompt="Files> "
+    local header="enter:open  tab:select  ctrl-x:delete  ctrl-f:files  ctrl-d:dirs  ctrl-g:live  ctrl-/:preview"
+    local start_reload="${file_cmd_str}"
+    local start_bind="start:reload:${start_reload}"
+
+    if [[ $start_mode == "directory" ]]; then
+        prompt="Dirs> "
+        start_reload="${dir_cmd_str}"
+        start_bind="start:reload:${start_reload}+change-multi(0)"
+    fi
 
     local selection_output
-    selection_output="$("${FILE_CMD[@]}" | fzf \
+    selection_output="$(${FILE_CMD[@]} | fzf \
         --ansi \
         --multi \
         --tmux=90% \
-        --prompt="Files> " \
-        --header="enter:open  tab:select  ctrl-x:delete  ctrl-f:files  ctrl-d:dirs  ctrl-/:preview" \
+        --prompt="$prompt" \
+        --header="$header" \
         --bind="enter:accept" \
         --bind="ctrl-/:toggle-preview" \
         --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${file_cmd_str})" \
         --bind="ctrl-f:change-prompt(Files> )+reload(${file_cmd_str})+change-multi(1)" \
         --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
+        --bind="ctrl-g:become:${self} --mode live -- {q}" \
+        --bind="${start_bind}" \
         --preview="bat --style=numbers --color=always -- {}" \
         --preview-window="<80(up)" \
         --query="${query}")"
@@ -50,4 +119,32 @@ main() {
     fi
 }
 
-main "${*:-}"
+run_live() {
+    local query="$1"
+
+    local reload_cmd='reload:rg --column --color=always --smart-case -- {q} || :'
+    local opener='
+        if [[ -$FZF_SELECT_COUNT -eq 0 ]] then
+            nvim {1} +{2}
+        else
+            nvim +cw -q {+f}
+        fi
+
+    '
+
+    fzf \
+        --multi \
+        --tmux=90% \
+        --disabled \
+        --ansi \
+        --bind="start,change:$reload_cmd" \
+        --bind="enter:become:$opener" \
+        --bind="ctrl-q:select-all+become:$opener" \
+        --bind="ctrl-a:select-all,ctrl-d:deselect-all,ctrl-/:toggle-preview" \
+        --delimiter=":" \
+        --preview="bat --style=numbers --color=always --highlight-line={2} -- {1}" \
+        --preview-window="+{2}/2,<80(up)" \
+        --query="${query}"
+}
+
+main "$@"
