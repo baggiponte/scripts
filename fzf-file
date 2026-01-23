@@ -1,25 +1,47 @@
 #!/usr/bin/env zsh
 
 main() {
-    requires fd fzf bat nvim
+    requires fd fzf bat eza nvim
 
-    local FLAGS=(--hidden --no-ignore-vcs --type=file)
-    local files="$(fd "${FLAGS[@]}")"
+    local -a FILE_CMD=(fd --hidden --no-ignore-vcs --type file)
+    local -a DIR_CMD=(fd --hidden --no-ignore-vcs --type directory)
 
-    if [[ -z $files ]]; then
-        echo "No files found, exiting..."
+    local files="$("${FILE_CMD[@]}")"
+    local directories="$("${DIR_CMD[@]}")"
+
+    if [[ -z $files && -z $directories ]]; then
+        echo "No files or directories found, exiting..."
         return 1
     fi
 
-    fd "${FLAGS[@]}" | \
-    fzf \
+    local file_cmd_str="${(j: :)FILE_CMD}"
+    local dir_cmd_str="${(j: :)DIR_CMD}"
+    local query="${*:-}"
+
+    local -a selection
+    selection=("${(@f)$("${FILE_CMD[@]}" | fzf \
         --ansi \
+        --multi \
         --tmux=90% \
-        --bind="enter:become:nvim -- {}" \
+        --prompt="Files> " \
+        --header="enter:open  tab:select  ctrl-x:delete  ctrl-f:files  ctrl-d:dirs  ctrl-/:preview" \
+        --bind="enter:accept" \
         --bind="ctrl-/:toggle-preview" \
+        --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${file_cmd_str})" \
+        --bind="ctrl-f:change-prompt(Files> )+reload(${file_cmd_str})+change-multi(1)" \
+        --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
         --preview="bat --style=numbers --color=always -- {}" \
         --preview-window="<80(up)" \
-        --query="${*:-}"
+        --query="${query}")}")
+
+    if (( ${#selection[@]} == 0 )); then
+        return 0
+    fi
+    if [[ -d $selection[1] ]]; then
+        nvim -c "Oil $selection[1]"
+    else
+        nvim -O -- "${selection[@]}"
+    fi
 }
 
 main "${*:-}"
