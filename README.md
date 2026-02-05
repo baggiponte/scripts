@@ -23,16 +23,19 @@ find * -type l > .gitignore
 Interactive file/directory picker and live ripgrep search that opens results in Neovim.
 
 Usage:
+
 ```bash
 fzf-file [--mode <files|directory|live>] [--] [query...]
 ```
 
 How it works:
+
 - `files` mode (default): lists files via `fd`, fuzzy-select, then opens selections in splits.
 - `directory` mode: lists directories via `fd`, then opens the chosen directory in Oil.
 - `live` mode: live `rg` search; enter opens the current hit, multi-select opens a quickfix list.
 
 Key bindings (files/dirs):
+
 - `enter` open selection
 - `tab` toggle selection
 - `ctrl-f` files mode
@@ -42,6 +45,7 @@ Key bindings (files/dirs):
 - `ctrl-/` toggle preview
 
 Key bindings (live):
+
 - `enter` open result
 - `ctrl-q` select all + open
 - `ctrl-a` select all
