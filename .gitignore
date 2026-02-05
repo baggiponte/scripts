@@ -5,6 +5,7 @@ az.completion.sh
 azps.ps1
 claude
 dbc
+mlx_lm
 mlx_lm.awq
 mlx_lm.benchmark
 mlx_lm.cache_prompt
@@ -23,9 +24,11 @@ mlx_lm.server
 mlx_lm.upload
 poetry
 prek
-python
 python-argcomplete-check-easy-install-script
-python3
+python3.10
+python3.11
+python3.12
+python3.13
 python3.14
 register-python-argcomplete
 snowsql
