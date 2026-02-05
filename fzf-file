@@ -42,12 +42,6 @@ main() {
     done
 
     requires fd fzf bat nvim rg eza
-    local script_path="${${(%):-%x}:A}"
-    if [[ -z $script_path ]]; then
-        script_path="${0:A}"
-    fi
-    typeset -g SCRIPT_SELF="$script_path"
-
     local mode="files"
     local -a query_parts
 
@@ -112,8 +106,6 @@ run_files_dirs() {
 
     local file_cmd_str="${(j: :)FILE_CMD}"
     local dir_cmd_str="${(j: :)DIR_CMD}"
-    local self="${SCRIPT_SELF:-${0:A}}"
-
     local prompt="Files> "
     local header="enter:open  tab:select  ctrl-x:delete  ctrl-f:files  ctrl-d:dirs  ctrl-g:live  ctrl-/:preview"
     local start_reload="${file_cmd_str}"
@@ -130,6 +122,8 @@ run_files_dirs() {
         --ansi \
         --multi \
         --tmux=90% \
+        --print-query \
+        --expect=ctrl-g \
         --prompt="$prompt" \
         --header="$header" \
         --bind="enter:accept" \
@@ -137,7 +131,6 @@ run_files_dirs() {
         --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${file_cmd_str})" \
         --bind="ctrl-f:change-prompt(Files> )+reload(${file_cmd_str})+change-multi(1)" \
         --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
-        --bind="ctrl-g:become:${self} --mode live -- {q}" \
         --bind="${start_bind}" \
         --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
         --preview-window="<80(up)" \
@@ -146,8 +139,22 @@ run_files_dirs() {
         return 0
     fi
 
+    local -a fzf_lines
+    fzf_lines=("${(@f)selection_output}")
+
+    local fzf_query="${fzf_lines[1]:-}"
+    local fzf_key="${fzf_lines[2]:-}"
+
+    if [[ $fzf_key == "ctrl-g" ]]; then
+        run_live "$fzf_query"
+        return 0
+    fi
+
     local -a selection
-    selection=("${(@f)selection_output}")
+    local i
+    for (( i = 3; i <= ${#fzf_lines[@]}; i++ )); do
+        selection+=("${fzf_lines[i]}")
+    done
 
     if (( ${#selection[@]} == 0 )) || [[ -z ${selection[1]} ]]; then
         return 0
@@ -163,14 +170,11 @@ run_live() {
     local query="$1"
 
     local reload_cmd='reload:rg --column --color=always --smart-case -- {q} || :'
-    local opener='
-        if [[ -$FZF_SELECT_COUNT -eq 0 ]] then
-            nvim {1} +{2}
-        else
-            nvim +cw -q {+f}
-        fi
-
-    '
+    local opener='if [ "${FZF_SELECT_COUNT:-0}" -eq 0 ]; then
+        exec nvim {1} +{2}
+    else
+        exec nvim +cw -q {+f}
+    fi'
 
     fzf \
         --multi \
