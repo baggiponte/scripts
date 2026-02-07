@@ -17,7 +17,7 @@ Modes:
 
 Notes:
   - Any remaining arguments are treated as the initial fzf query.
-  - Common keys in all modes: enter=open, tab=select, ctrl-a=select all, ctrl-x=delete, ctrl-/=preview.
+  - Common keys in all modes: enter=open, tab=select, ctrl-a=select all, ctrl-x=delete.
   - Mode switches: files(ctrl-d=dirs, ctrl-g=live), directory(ctrl-f=files, ctrl-g=live), live(ctrl-f=files, ctrl-d=dirs).
   - Selections open in Neovim (files in splits, dir opens with Oil).
 
@@ -132,7 +132,7 @@ run_files_dirs() {
             ;;
     esac
 
-    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete  ctrl-/:preview"
+    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete"
     local header="${common_header}  ${mode_header}"
     local list_cmd_str="${(j: :)LIST_CMD}"
 
@@ -146,7 +146,6 @@ run_files_dirs() {
         --prompt="$prompt" \
         --header="$header" \
         --bind="enter:accept" \
-        --bind="ctrl-/:toggle-preview" \
         --bind="ctrl-a:select-all" \
         --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${list_cmd_str})" \
         --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
@@ -187,7 +186,7 @@ run_files_dirs() {
 run_live() {
     local query="$1"
 
-    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete  ctrl-/:preview"
+    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete"
     local mode_header="ctrl-f:files  ctrl-d:dirs"
     local reload_cmd='reload:rg --column --color=always --smart-case -- {q} || :'
     local prompt="Live> "
@@ -211,7 +210,6 @@ run_live() {
         --header="$header" \
         --bind="start,change:$reload_cmd" \
         --bind="enter:become:$opener" \
-        --bind="ctrl-/:toggle-preview" \
         --bind="ctrl-a:select-all" \
         --bind="ctrl-x:execute-silent(${delete_cmd})+${reload_cmd}" \
         --delimiter=":" \
