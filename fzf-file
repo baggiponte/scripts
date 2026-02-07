@@ -17,7 +17,8 @@ Modes:
 
 Notes:
   - Any remaining arguments are treated as the initial fzf query.
-  - In files/dirs mode, ctrl-g switches to live mode with the current query.
+  - Common keys in all modes: enter=open, tab=select, ctrl-a=select all, ctrl-x=delete, ctrl-/=preview.
+  - Mode switches: files(ctrl-d=dirs, ctrl-g=live), directory(ctrl-f=files, ctrl-g=live), live(ctrl-f=files, ctrl-d=dirs).
   - Selections open in Neovim (files in splits, dir opens with Oil).
 
 Dependencies:
@@ -89,72 +90,9 @@ main() {
     esac
 }
 
-run_files_dirs() {
-    local start_mode="$1"
-    local query="$2"
-
-    local -a FILE_CMD=(fd --hidden --no-ignore-vcs --type file)
-    local -a DIR_CMD=(fd --hidden --no-ignore-vcs --type directory)
-
-    local files="$(${FILE_CMD[@]})"
-    local directories="$(${DIR_CMD[@]})"
-
-    if [[ -z $files && -z $directories ]]; then
-        echo "No files or directories found, exiting..."
-        return 1
-    fi
-
-    local file_cmd_str="${(j: :)FILE_CMD}"
-    local dir_cmd_str="${(j: :)DIR_CMD}"
-    local prompt="Files> "
-    local header="enter:open  tab:select  ctrl-x:delete  ctrl-f:files  ctrl-d:dirs  ctrl-g:live  ctrl-/:preview"
-    local start_reload="${file_cmd_str}"
-    local start_bind="start:reload:${start_reload}"
-
-    if [[ $start_mode == "directory" ]]; then
-        prompt="Dirs> "
-        start_reload="${dir_cmd_str}"
-        start_bind="start:reload:${start_reload}+change-multi(0)"
-    fi
-
-    local selection_output
-    selection_output="$(${FILE_CMD[@]} | fzf \
-        --ansi \
-        --multi \
-        --tmux=90% \
-        --print-query \
-        --expect=ctrl-g \
-        --prompt="$prompt" \
-        --header="$header" \
-        --bind="enter:accept" \
-        --bind="ctrl-/:toggle-preview" \
-        --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${file_cmd_str})" \
-        --bind="ctrl-f:change-prompt(Files> )+reload(${file_cmd_str})+change-multi(1)" \
-        --bind="ctrl-d:change-prompt(Dirs> )+reload(${dir_cmd_str})+change-multi(0)" \
-        --bind="${start_bind}" \
-        --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
-        --preview-window="<80(up)" \
-        --query="${query}")"
-    if (( $? != 0 )); then
-        return 0
-    fi
-
-    local -a fzf_lines
-    fzf_lines=("${(@f)selection_output}")
-
-    local fzf_query="${fzf_lines[1]:-}"
-    local fzf_key="${fzf_lines[2]:-}"
-
-    if [[ $fzf_key == "ctrl-g" ]]; then
-        run_live "$fzf_query"
-        return 0
-    fi
-
+open_selection() {
     local -a selection
-    local i
-    for (( i = 3; i <= ${#fzf_lines[@]}; i++ )); do
-        selection+=("${fzf_lines[i]}")
-    done
+    selection=("$@")
 
     if (( ${#selection[@]} == 0 )) || [[ -z ${selection[1]} ]]; then
         return 0
@@ -166,29 +104,137 @@ run_files_dirs() {
     fi
 }
 
+run_files_dirs() {
+    local mode="$1"
+    local query="$2"
+
+    local -a LIST_CMD
+    local prompt=""
+    local mode_header=""
+    local expected_keys=""
+
+    case "$mode" in
+        files)
+            LIST_CMD=(fd --hidden --no-ignore-vcs --type file)
+            prompt="Files> "
+            mode_header="ctrl-d:dirs  ctrl-g:live"
+            expected_keys="ctrl-d,ctrl-g"
+            ;;
+        directory)
+            LIST_CMD=(fd --hidden --no-ignore-vcs --type directory)
+            prompt="Dirs> "
+            mode_header="ctrl-f:files  ctrl-g:live"
+            expected_keys="ctrl-f,ctrl-g"
+            ;;
+        *)
+            echo "Unknown files/dirs mode: $mode"
+            return 1
+            ;;
+    esac
+
+    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete  ctrl-/:preview"
+    local header="${common_header}  ${mode_header}"
+    local list_cmd_str="${(j: :)LIST_CMD}"
+
+    local selection_output
+    selection_output="$(${LIST_CMD[@]} | fzf \
+        --ansi \
+        --multi \
+        --tmux=90% \
+        --print-query \
+        --expect="${expected_keys}" \
+        --prompt="$prompt" \
+        --header="$header" \
+        --bind="enter:accept" \
+        --bind="ctrl-/:toggle-preview" \
+        --bind="ctrl-a:select-all" \
+        --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${list_cmd_str})" \
+        --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
+        --preview-window="<80(up)" \
+        --query="${query}")"
+    if (( $? != 0 )); then
+        return 0
+    fi
+
+    local -a fzf_lines
+    fzf_lines=("${(@f)selection_output}")
+    local fzf_query="${fzf_lines[1]:-}"
+    local fzf_key="${fzf_lines[2]:-}"
+
+    case "$fzf_key" in
+        ctrl-g)
+            run_live "$fzf_query"
+            return 0
+            ;;
+        ctrl-d)
+            run_files_dirs "directory" "$fzf_query"
+            return 0
+            ;;
+        ctrl-f)
+            run_files_dirs "files" "$fzf_query"
+            return 0
+            ;;
+    esac
+
+    local -a selection
+    local i
+    for (( i = 3; i <= ${#fzf_lines[@]}; i++ )); do
+        selection+=("${fzf_lines[i]}")
+    done
+    open_selection "${selection[@]}"
+}
+
 run_live() {
     local query="$1"
 
+    local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete  ctrl-/:preview"
+    local mode_header="ctrl-f:files  ctrl-d:dirs"
     local reload_cmd='reload:rg --column --color=always --smart-case -- {q} || :'
+    local prompt="Live> "
+    local header="${common_header}  ${mode_header}"
+    local delete_cmd='cut -d: -f1 {+f} | sort -u | while IFS= read -r file; do [ -n "$file" ] && mv -- "$file" ~/.Trash/ 2>/dev/null || true; done; true'
     local opener='if [ "${FZF_SELECT_COUNT:-0}" -eq 0 ]; then
         exec nvim {1} +{2}
     else
         exec nvim +cw -q {+f}
     fi'
 
-    fzf \
+    local selection_output
+    selection_output="$(fzf \
         --multi \
         --tmux=90% \
         --disabled \
         --ansi \
+        --print-query \
+        --expect=ctrl-f,ctrl-d \
+        --prompt="$prompt" \
+        --header="$header" \
         --bind="start,change:$reload_cmd" \
         --bind="enter:become:$opener" \
-        --bind="ctrl-q:select-all+become:$opener" \
-        --bind="ctrl-a:select-all,ctrl-d:deselect-all,ctrl-/:toggle-preview" \
+        --bind="ctrl-/:toggle-preview" \
+        --bind="ctrl-a:select-all" \
+        --bind="ctrl-x:execute-silent(${delete_cmd})+${reload_cmd}" \
         --delimiter=":" \
         --preview="bat --style=numbers --color=always --highlight-line={2} -- {1}" \
         --preview-window="+{2}/2,<80(up)" \
-        --query="${query}"
+        --query="${query}")"
+    if (( $? != 0 )); then
+        return 0
+    fi
+
+    local -a fzf_lines
+    fzf_lines=("${(@f)selection_output}")
+    local fzf_query="${fzf_lines[1]:-}"
+    local fzf_key="${fzf_lines[2]:-}"
+
+    if [[ $fzf_key == "ctrl-f" ]]; then
+        run_files_dirs "files" "$fzf_query"
+        return 0
+    fi
+    if [[ $fzf_key == "ctrl-d" ]]; then
+        run_files_dirs "directory" "$fzf_query"
+        return 0
+    fi
 }
 
 main "$@"
