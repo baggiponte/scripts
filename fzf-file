@@ -73,18 +73,28 @@ main() {
         mode="files"
     fi
 
+    local normalized_mode=""
+    normalized_mode="$(normalize_mode "$mode")" || {
+        echo "Unknown --mode: $mode (expected files, directory, or live)"
+        return 1
+    }
+    mode="$normalized_mode"
+    run_picker "$mode" "${(j: :)query_parts}"
+}
+
+normalize_mode() {
+    local mode="$1"
     case "$mode" in
-        files|file|f)
-            run_files_dirs "files" "${(j: :)query_parts}"
+        ""|files|file|f)
+            printf '%s\n' "files"
             ;;
         directory|dir|d|dirs)
-            run_files_dirs "directory" "${(j: :)query_parts}"
+            printf '%s\n' "directory"
             ;;
         live|l)
-            run_live "${(j: :)query_parts}"
+            printf '%s\n' "live"
             ;;
         *)
-            echo "Unknown --mode: $mode (expected files, directory, or live)"
             return 1
             ;;
     esac
@@ -104,7 +114,86 @@ open_selection() {
     fi
 }
 
-run_files_dirs() {
+strip_ansi() {
+    sed -E $'s/\x1b\\[[0-9;]*[ -/]*[@-~]//g'
+}
+
+open_live_selection() {
+    local -a selection
+    selection=("$@")
+    if (( ${#selection[@]} == 0 )) || [[ -z ${selection[1]} ]]; then
+        return 0
+    fi
+
+    local -a clean_selection
+    local row
+    for row in "${selection[@]}"; do
+        clean_selection+=("$(printf '%s\n' "$row" | strip_ansi)")
+    done
+
+    if (( ${#clean_selection[@]} == 1 )); then
+        local file line_no _
+        IFS=':' read -r file line_no _ <<< "${clean_selection[1]}"
+        if [[ -z $file ]]; then
+            return 0
+        fi
+        if [[ -n $line_no ]]; then
+            nvim -- "$file" "+${line_no}"
+        else
+            nvim -- "$file"
+        fi
+        return 0
+    fi
+
+    local quickfix_file
+    quickfix_file="$(mktemp "${TMPDIR:-/tmp}/fzf-file-qf.XXXXXX")" || return 1
+    printf '%s\n' "${clean_selection[@]}" > "$quickfix_file"
+    nvim +cw -q "$quickfix_file"
+    rm -f -- "$quickfix_file"
+}
+
+parse_fzf_output() {
+    local output="$1"
+    local -a lines
+    lines=("${(@f)output}")
+    typeset -g FZF_QUERY="${lines[1]:-}"
+    typeset -g FZF_KEY="${lines[2]:-}"
+    typeset -ga FZF_SELECTION=()
+    local i
+    for (( i = 3; i <= ${#lines[@]}; i++ )); do
+        FZF_SELECTION+=("${lines[i]}")
+    done
+}
+
+next_mode() {
+    local mode="$1"
+    local key="$2"
+    case "${mode}:${key}" in
+        files:ctrl-d)
+            printf '%s\n' "directory"
+            ;;
+        files:ctrl-g)
+            printf '%s\n' "live"
+            ;;
+        directory:ctrl-f)
+            printf '%s\n' "files"
+            ;;
+        directory:ctrl-g)
+            printf '%s\n' "live"
+            ;;
+        live:ctrl-f)
+            printf '%s\n' "files"
+            ;;
+        live:ctrl-d)
+            printf '%s\n' "directory"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+run_files_dirs_fzf() {
     local mode="$1"
     local query="$2"
 
@@ -150,40 +239,11 @@ run_files_dirs() {
         --bind="ctrl-x:execute-silent(mv -- {+} ~/.Trash/)+reload(${list_cmd_str})" \
         --preview="if [[ -d {} ]]; then eza --tree --level=2 --color=always --group-directories-first -- {}; else bat --style=numbers --color=always -- {}; fi" \
         --preview-window="<80(up)" \
-        --query="${query}")"
-    if (( $? != 0 )); then
-        return 0
-    fi
-
-    local -a fzf_lines
-    fzf_lines=("${(@f)selection_output}")
-    local fzf_query="${fzf_lines[1]:-}"
-    local fzf_key="${fzf_lines[2]:-}"
-
-    case "$fzf_key" in
-        ctrl-g)
-            run_live "$fzf_query"
-            return 0
-            ;;
-        ctrl-d)
-            run_files_dirs "directory" "$fzf_query"
-            return 0
-            ;;
-        ctrl-f)
-            run_files_dirs "files" "$fzf_query"
-            return 0
-            ;;
-    esac
-
-    local -a selection
-    local i
-    for (( i = 3; i <= ${#fzf_lines[@]}; i++ )); do
-        selection+=("${fzf_lines[i]}")
-    done
-    open_selection "${selection[@]}"
+        --query="${query}")" || return 1
+    printf '%s' "$selection_output"
 }
 
-run_live() {
+run_live_fzf() {
     local query="$1"
 
     local common_header="enter:open  tab:select  ctrl-a:all  ctrl-x:delete"
@@ -192,12 +252,6 @@ run_live() {
     local prompt="Live> "
     local header="${common_header}  ${mode_header}"
     local delete_cmd='cut -d: -f1 {+f} | sort -u | while IFS= read -r file; do [ -n "$file" ] && mv -- "$file" ~/.Trash/ 2>/dev/null || true; done; true'
-    local opener='if [ "${FZF_SELECT_COUNT:-0}" -eq 0 ]; then
-        exec nvim {1} +{2}
-    else
-        exec nvim +cw -q {+f}
-    fi'
-
     local selection_output
     selection_output="$(fzf \
         --multi \
@@ -205,34 +259,59 @@ run_live() {
         --disabled \
         --ansi \
         --print-query \
-        --expect=ctrl-f,ctrl-d \
+        --expect=enter,ctrl-f,ctrl-d \
         --prompt="$prompt" \
         --header="$header" \
         --bind="start,change:$reload_cmd" \
-        --bind="enter:become:$opener" \
+        --bind="enter:accept" \
         --bind="ctrl-a:select-all" \
         --bind="ctrl-x:execute-silent(${delete_cmd})+${reload_cmd}" \
         --delimiter=":" \
         --preview="bat --style=numbers --color=always --highlight-line={2} -- {1}" \
         --preview-window="+{2}/2,<80(up)" \
-        --query="${query}")"
-    if (( $? != 0 )); then
-        return 0
-    fi
+        --query="${query}")" || return 1
+    printf '%s' "$selection_output"
+}
 
-    local -a fzf_lines
-    fzf_lines=("${(@f)selection_output}")
-    local fzf_query="${fzf_lines[1]:-}"
-    local fzf_key="${fzf_lines[2]:-}"
+run_picker() {
+    local mode="$1"
+    local query="$2"
+    local selection_output=""
+    local switched_mode=""
 
-    if [[ $fzf_key == "ctrl-f" ]]; then
-        run_files_dirs "files" "$fzf_query"
+    while true; do
+        case "$mode" in
+            files|directory)
+                selection_output="$(run_files_dirs_fzf "$mode" "$query")" || return 0
+                ;;
+            live)
+                selection_output="$(run_live_fzf "$query")" || return 0
+                ;;
+            *)
+                echo "Unexpected mode: $mode"
+                return 1
+                ;;
+        esac
+
+        parse_fzf_output "$selection_output"
+        query="$FZF_QUERY"
+
+        switched_mode="$(next_mode "$mode" "$FZF_KEY")" || switched_mode=""
+        if [[ -n $switched_mode ]]; then
+            mode="$switched_mode"
+            continue
+        fi
+
+        case "$mode" in
+            files|directory)
+                open_selection "${FZF_SELECTION[@]}"
+                ;;
+            live)
+                open_live_selection "${FZF_SELECTION[@]}"
+                ;;
+        esac
         return 0
-    fi
-    if [[ $fzf_key == "ctrl-d" ]]; then
-        run_files_dirs "directory" "$fzf_query"
-        return 0
-    fi
+    done
 }
 
 main "$@"
