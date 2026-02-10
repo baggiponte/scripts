@@ -5,6 +5,7 @@ az.completion.sh
 azps.ps1
 claude
 dbc
+maturin
 mlx_lm
 mlx_lm.awq
 mlx_lm.benchmark
