@@ -70,7 +70,9 @@ done
 '
 
     session="$(
-        tmux list-sessions -F "#{session_name}" | fzf --tmux=center --ansi \
+        tmux list-sessions -F "#{session_name}" | fzf --tmux=center,80%,80% --ansi \
+            --header "enter:switch  ctrl-x:kill session" \
+            --bind "ctrl-x:execute-silent(tmux kill-session -t {} 2>/dev/null)+reload(tmux list-sessions -F \"#{session_name}\")" \
             --preview "$preview_cmd" \
             --preview-window "right,70%,border-left,wrap"
     )"
