@@ -5,6 +5,7 @@ az.completion.sh
 azps.ps1
 claude
 dbc
+hf
 maturin
 mlx_lm
 mlx_lm.awq
@@ -22,8 +23,8 @@ mlx_lm.lora
 mlx_lm.manage
 mlx_lm.perplexity
 mlx_lm.server
+mlx_lm.share
 mlx_lm.upload
-poetry
 prek
 python-argcomplete-check-easy-install-script
 python3.10
@@ -33,5 +34,6 @@ python3.13
 python3.14
 register-python-argcomplete
 snowsql
+tiny-agents
 wandb
 wb
