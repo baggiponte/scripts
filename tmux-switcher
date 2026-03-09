@@ -1,10 +1,68 @@
 #! /usr/bin/env zsh
 
-tmux-switcher () {
-    local preview_cmd
-    local session
+show_help() {
+    cat <<'EOF'
+tmux-switcher: switch tmux sessions or create/switch from zoxide projects
 
-    preview_cmd='
+Usage:
+  tmux-switcher [--mode <sessions|projects>] [query...]
+
+Modes:
+  sessions   Switch/kill existing sessions (default)
+  projects   Pick a zoxide directory and create/switch session
+
+Keys:
+  ctrl-n   toggle sessions/projects modes
+  ctrl-x   kill selected session (sessions mode only)
+EOF
+}
+
+normalize_mode() {
+    local mode="$1"
+    case "$mode" in
+        ""|sessions|session|s)
+            printf '%s\n' "sessions"
+            ;;
+        projects|project|p|dirs|directory|d)
+            printf '%s\n' "projects"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+parse_fzf_output() {
+    local output="$1"
+    local -a lines
+    lines=("${(@f)output}")
+    typeset -g FZF_QUERY="${lines[1]:-}"
+    typeset -g FZF_KEY="${lines[2]:-}"
+    typeset -ga FZF_SELECTION=()
+    local i
+    for (( i = 3; i <= ${#lines[@]}; i++ )); do
+        FZF_SELECTION+=("${lines[i]}")
+    done
+}
+
+next_mode() {
+    local mode="$1"
+    local key="$2"
+    case "${mode}:${key}" in
+        sessions:ctrl-n)
+            printf '%s\n' "projects"
+            ;;
+        projects:ctrl-n)
+            printf '%s\n' "sessions"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+session_preview_cmd() {
+    cat <<'EOF'
 session={}
 
 if ! tmux has-session -t "$session" 2>/dev/null; then
@@ -67,25 +125,166 @@ while IFS="|" read -r window_index window_name window_panes window_active; do
             "$c_path" "$short_path" "$c_reset"
     done
 done
-'
+EOF
+}
 
-    session="$(
-        tmux list-sessions -F "#{session_name}" | fzf --tmux=center,80%,80% --ansi \
-            --header "enter:switch  ctrl-x:kill session" \
-            --bind "ctrl-x:execute-silent(tmux kill-session -t {} 2>/dev/null)+reload(tmux list-sessions -F \"#{session_name}\")" \
-            --preview "$preview_cmd" \
-            --preview-window "right,70%,border-left,wrap"
-    )"
+run_sessions_fzf() {
+    local query="$1"
+    local preview_cmd
+    preview_cmd="$(session_preview_cmd)"
 
+    local selection_output
+    selection_output="$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf \
+        --tmux=center,80%,80% \
+        --ansi \
+        --print-query \
+        --expect=ctrl-n \
+        --prompt="Sessions> " \
+        --header="enter:switch  ctrl-x:kill session  ctrl-n:projects" \
+        --bind='ctrl-x:execute-silent(tmux kill-session -t {} 2>/dev/null)+reload(tmux list-sessions -F "#{session_name}" 2>/dev/null)' \
+        --preview="$preview_cmd" \
+        --preview-window="right,70%,border-left,wrap" \
+        --query="$query")" || return 1
+
+    printf '%s' "$selection_output"
+}
+
+run_projects_fzf() {
+    local query="$1"
+    local selection_output
+
+    selection_output="$(zoxide query --list --score --exclude "$PWD" 2>/dev/null | fzf \
+        --tmux=center,80%,80% \
+        --ansi \
+        --no-sort \
+        --print-query \
+        --expect=ctrl-n \
+        --prompt="Projects> " \
+        --header="enter:create/switch  ctrl-n:sessions" \
+        --preview='eza --all --group-directories-first --color=always --icons --oneline --level=2 --tree -- {2..}' \
+        --preview-window="up" \
+        --query="$query")" || return 1
+
+    printf '%s' "$selection_output"
+}
+
+switch_to_session() {
+    local session="$1"
     if [[ -z "$session" ]]; then
-        return
+        return 0
     fi
 
-    if [[ ! -z "$TMUX" ]]; then
+    if [[ -n "$TMUX" ]]; then
         tmux switch-client -t "$session"
     else
         tmux attach -t "$session"
     fi
 }
 
-tmux-switcher
+switch_to_project() {
+    local selection="$1"
+    local dir session
+
+    dir="$(printf '%s\n' "$selection" | awk '{$1=""; sub(/^ +/, ""); print}')"
+    if [[ -z "$dir" ]]; then
+        return 0
+    fi
+
+    session="$(basename "${dir/./}")"
+    if ! tmux has-session -t "$session" 2>/dev/null; then
+        tmux new-session -d -s "$session" -c "$dir"
+    fi
+
+    if [[ -n "$TMUX" ]]; then
+        tmux switch-client -t "$session"
+    else
+        tmux attach -t "$session"
+    fi
+}
+
+run_picker() {
+    local mode="$1"
+    local query="$2"
+    local selection_output=""
+    local switched_mode=""
+
+    while true; do
+        case "$mode" in
+            sessions)
+                selection_output="$(run_sessions_fzf "$query")" || return 0
+                ;;
+            projects)
+                selection_output="$(run_projects_fzf "$query")" || return 0
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+
+        parse_fzf_output "$selection_output"
+        query="$FZF_QUERY"
+
+        switched_mode="$(next_mode "$mode" "$FZF_KEY")" || switched_mode=""
+        if [[ -n "$switched_mode" ]]; then
+            mode="$switched_mode"
+            continue
+        fi
+
+        if (( ${#FZF_SELECTION[@]} == 0 )); then
+            return 0
+        fi
+
+        case "$mode" in
+            sessions)
+                switch_to_session "${FZF_SELECTION[1]}"
+                ;;
+            projects)
+                switch_to_project "${FZF_SELECTION[1]}"
+                ;;
+        esac
+        return 0
+    done
+}
+
+main() {
+    requires tmux fzf zoxide eza
+
+    local mode="sessions"
+    local -a query_parts
+
+    while (( $# > 0 )); do
+        case "$1" in
+            -h|--help)
+                show_help
+                return 0
+                ;;
+            --mode)
+                shift
+                mode="${1:-}"
+                shift
+                ;;
+            --mode=*)
+                mode="${1#--mode=}"
+                shift
+                ;;
+            --)
+                shift
+                query_parts+=("$@")
+                break
+                ;;
+            *)
+                query_parts+=("$1")
+                shift
+                ;;
+        esac
+    done
+
+    mode="$(normalize_mode "$mode")" || {
+        echo "Unknown --mode: $mode (expected sessions or projects)"
+        return 1
+    }
+
+    run_picker "$mode" "${(j: :)query_parts}"
+}
+
+main "$@"
