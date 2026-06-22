@@ -36,7 +36,7 @@ brew-cleanup () {
     local bundlefile="${HOMEBREW_BUNDLE_FILE:-"$HOME/.config/Brewfile"}"
     print -x 2 "\t* Dump formulae and casks to $(basename "${bundlefile}")..."
     [ -s "${bundlefile}" ] && mv "${bundlefile}" "${bundlefile}.bak"
-    brew bundle dump --describe --file="${bundlefile}"
+    brew bundle dump --file="${bundlefile}"
 }
 
 brew-cleanup
